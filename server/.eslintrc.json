@@ -12,6 +12,7 @@
   "plugins": ["@typescript-eslint"],
   "ignorePatterns": ["dist"],
   "rules": {
-    "prefer-const": 1
+    "prefer-const": 1,
+    "@typescript-eslint/no-explicit-any": 0
   }
 }
