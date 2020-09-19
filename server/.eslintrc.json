@@ -11,5 +11,7 @@
   },
   "plugins": ["@typescript-eslint"],
   "ignorePatterns": ["dist"],
-  "rules": {}
+  "rules": {
+    "prefer-const": 1
+  }
 }
