@@ -3,6 +3,7 @@ import logger from 'koa-logger';
 import cors from '@koa/cors';
 import bodyParser from 'koa-bodyparser';
 
+import router from './router';
 import { RequestError } from './errors/errRequest';
 
 const app = new Koa();
@@ -27,5 +28,7 @@ app.on('error', (err: RequestError, ctx: Context) => {
 app.use(logger());
 app.use(cors());
 app.use(bodyParser());
+
+app.use(router.routes()).use(router.allowedMethods());
 
 export default app;
