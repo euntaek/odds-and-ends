@@ -45,23 +45,25 @@ export const remove: Middleware = async (ctx) => {
 };
 
 export const removeMany: Middleware = async (ctx) => {
-  // dummy Ids
-  const ids = ['5f663cccaf16ed14859b8ef7', '5f663f34adb1ac1526ee746d'];
+  const { checked: ids }: { checked: string[] } = ctx.request.body;
 
   const postService = new PostService();
   const result = await postService.removeManyPost(ids);
-  if (!result.ok || result.n !== ids.length) {
+  console.log(ids.length === result.n, ids.length, ' ', result.n);
+  if (result.ok && result.n === ids.length) {
+    ctx.status = StatusCodes.NO_CONTENT;
+  } else {
     throw new BadRequest({
       location: 'posts/ctrl.removeMany',
       error: '선택 된 게시물 삭제 실패 or 부분 삭제',
       log: result,
     });
   }
-  ctx.status = StatusCodes.NO_CONTENT;
 };
 
 export const update: Middleware = async (ctx) => {
   const { id }: { id: string } = ctx.params;
+
   const postBody = ctx.request.body as RequestBody;
   const postService = new PostService();
   const result = await postService.updateOnePost(id, postBody);
