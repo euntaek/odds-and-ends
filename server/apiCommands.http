@@ -9,15 +9,26 @@ GET http://{{host}}/posts HTTP/1.1
 
 ###
 # 특정 포스트 조회
-GET http://{{host}}/posts/5f677d0fc1fa510fe673e001 HTTP/1.1
+GET http://{{host}}/posts/5f67800d1000d311573a6ba1 HTTP/1.1
 
 ###
 # 특정 포스트 제거
-DELETE  http://{{host}}/posts/5f663f3fadb1ac1526ee7488 HTTP/1.1
+DELETE  http://{{host}}/posts/5f67800d1000d311573a6ba1 HTTP/1.1
 
 ###
 # 포스트 선택 삭제
 DELETE http://{{host}}/posts HTTP/1.1
+content-type: {{contentType}}
+
+{
+  "checked": [
+    "5f677e537ab58e10437eeb95",
+    "5f677d0fc1fa510fe673e001",
+    "5f67739ca02d240e767197d6",
+    "5f677366a02d240e767197d5"
+  ]
+}
+
 
 ###
 # 포스트 작성
@@ -33,11 +44,11 @@ content-type: {{contentType}}
 
 ###
 # 포스트 수정
-PATCH http://{{host}}/posts/5f663f36adb1ac1526ee746e HTTP/1.1
+PATCH http://{{host}}/posts/5f663f3cadb1ac1526ee7472 HTTP/1.1
 Content-Type: {{contentType}}
 
 {
-  "title": "수정 된 타222이틀",
+  "title": "수정 된 113331111",
   "body": "수정 된 바디",
   "tags": ["faf","fsfs"]
 }
