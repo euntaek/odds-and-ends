@@ -6,9 +6,9 @@ import PostModel, { Post } from '../models/postModel';
 class PostService {
   constructor(private postModel = new PostModel()) {}
 
-  async getAllPost(): Promise<Post[]> {
-    const result = await this.postModel.getAll();
-    if (result.success) return result.data as Post[];
+  async getAllPost(skip = 0, take = 10): Promise<[Post[], number]> {
+    const result = await this.postModel.getAll(skip, take);
+    if (result.success) return result.data as [Post[], number];
     throw new InternalServerError({
       location: 'postService/getAllPost',
       error: '게시물 조회(전체) 오류',

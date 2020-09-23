@@ -21,9 +21,13 @@ const failure = (error: any) => ({ success: false, error });
 class PostModel {
   constructor(private postRepository = getMongoRepository(Post)) {}
 
-  async getAll(): ModelReturn<Post[]> {
+  async getAll(skip: number, take: number): ModelReturn<[Post[], number]> {
     try {
-      const data = await this.postRepository.find();
+      const data = await this.postRepository.findAndCount({
+        skip,
+        take,
+        order: { _id: 'DESC' },
+      });
       return success(data);
     } catch (error) {
       return failure(error);
