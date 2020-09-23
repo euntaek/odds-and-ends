@@ -32,11 +32,16 @@ export const write: Middleware = async (ctx) => {
 };
 
 export const list: Middleware = async (ctx) => {
-  console.log(ctx.state);
   const postService = new PostService();
-  const posts = await postService.getAllPost();
+  const [posts, postCount] = await postService.getAllPost();
+  const refinedPosts = posts.map((post) => ({
+    ...post,
+    body: post.body.length < 100 ? post.body : `${post.body.slice(0, 100)}...`,
+  }));
+  const lastPage = Math.ceil(postCount / 10).toString();
+  ctx.set('Last-Page', lastPage);
   ctx.status = StatusCodes.OK;
-  ctx.body = posts;
+  ctx.body = refinedPosts;
 };
 
 export const read: Middleware = async (ctx) => {
