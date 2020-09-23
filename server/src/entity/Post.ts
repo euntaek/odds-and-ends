@@ -3,7 +3,7 @@ import { Entity, ObjectIdColumn, Column, ObjectID, CreateDateColumn } from 'type
 @Entity()
 export default class Post {
   @ObjectIdColumn()
-  id: ObjectID;
+  _id: ObjectID;
 
   @Column()
   title: string;
