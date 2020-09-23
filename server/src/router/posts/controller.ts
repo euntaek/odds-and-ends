@@ -1,8 +1,13 @@
 import { Middleware } from '@koa/router';
 import { StatusCodes } from 'http-status-codes';
+import Joi from 'joi';
+import joiObjectId from 'joi-objectid';
 
 import { BadRequest, NotFound } from '../../errors/errRequest';
+import { validateBody } from '../../lib/utils';
 import PostService from '../../services/PostService';
+
+const JoiObjectId = joiObjectId(Joi);
 
 interface RequestBody {
   title: string;
@@ -11,6 +16,14 @@ interface RequestBody {
 }
 
 export const write: Middleware = async (ctx) => {
+  const schema = Joi.object().keys({
+    title: Joi.string().required(),
+    body: Joi.string().required(),
+    tags: Joi.array().items(Joi.string()).required(),
+  });
+  if (!validateBody(ctx, schema)) {
+    throw new BadRequest({ location: 'validateBody', error: 'schema 오류', log: ctx.state.error });
+  }
   const postBody = ctx.request.body as RequestBody;
   const postService = new PostService();
   const post = await postService.createOnePost(postBody);
@@ -19,6 +32,7 @@ export const write: Middleware = async (ctx) => {
 };
 
 export const list: Middleware = async (ctx) => {
+  console.log(ctx.state);
   const postService = new PostService();
   const posts = await postService.getAllPost();
   ctx.status = StatusCodes.OK;
@@ -45,8 +59,13 @@ export const remove: Middleware = async (ctx) => {
 };
 
 export const removeMany: Middleware = async (ctx) => {
+  const schema = Joi.object().keys({
+    checked: Joi.array().items(JoiObjectId()).required(),
+  });
+  if (!validateBody(ctx, schema)) {
+    throw new BadRequest({ location: 'validateBody', error: 'schema 오류', log: ctx.state.error });
+  }
   const { checked: ids }: { checked: string[] } = ctx.request.body;
-
   const postService = new PostService();
   const result = await postService.removeManyPost(ids);
   console.log(ids.length === result.n, ids.length, ' ', result.n);
@@ -62,8 +81,15 @@ export const removeMany: Middleware = async (ctx) => {
 };
 
 export const update: Middleware = async (ctx) => {
+  const schema = Joi.object().keys({
+    title: Joi.string(),
+    body: Joi.string(),
+    tags: Joi.array().items(Joi.string()),
+  });
+  if (!validateBody(ctx, schema)) {
+    throw new BadRequest({ location: 'validateBody', error: 'schema 오류', log: ctx.state.error });
+  }
   const { id }: { id: string } = ctx.params;
-
   const postBody = ctx.request.body as RequestBody;
   const postService = new PostService();
   const result = await postService.updateOnePost(id, postBody);
