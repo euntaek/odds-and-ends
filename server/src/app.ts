@@ -13,7 +13,7 @@ app.use(async (ctx, next) => {
     await next();
   } catch (err) {
     ctx.status = err.statusCode || 500;
-    ctx.body = { message: err.message, detail: err.detail };
+    ctx.body = { message: err.message };
     ctx.app.emit('error', err, ctx);
   }
 });

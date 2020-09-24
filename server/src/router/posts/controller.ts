@@ -22,7 +22,7 @@ export const write: Middleware = async (ctx) => {
     tags: Joi.array().items(Joi.string()).required(),
   });
   if (!validateBody(ctx, schema)) {
-    throw new BadRequest({ location: 'validateBody', error: 'schema 오류', log: ctx.state.error });
+    throw new BadRequest({ message: ' shcema 오류', log: ctx.state.error });
   }
   const postBody = ctx.request.body as RequestBody;
   const postService = new PostService();
@@ -48,7 +48,7 @@ export const read: Middleware = async (ctx) => {
   const { id }: { id: string } = ctx.params;
   const postService = new PostService();
   const post = await postService.getOnePost(id);
-  if (!post) throw new NotFound({ location: 'posts/ctrl.read', error: '없는 게시물' });
+  if (!post) throw new NotFound({ message: '존재하지 않는 게시물' });
   ctx.status = StatusCodes.OK;
   ctx.body = post;
 };
@@ -58,7 +58,7 @@ export const remove: Middleware = async (ctx) => {
   const postService = new PostService();
   const result = await postService.removeOnePost(id);
   if (!result.ok || !result.value) {
-    throw new BadRequest({ location: 'posts/ctrl.remove', error: '게시물 삭제 실패', log: result });
+    throw new BadRequest({ message: '게시물 삭제 실패' });
   }
   ctx.status = StatusCodes.NO_CONTENT;
 };
@@ -68,7 +68,7 @@ export const removeMany: Middleware = async (ctx) => {
     checked: Joi.array().items(JoiObjectId()).required(),
   });
   if (!validateBody(ctx, schema)) {
-    throw new BadRequest({ location: 'validateBody', error: 'schema 오류', log: ctx.state.error });
+    throw new BadRequest();
   }
   const { checked: ids }: { checked: string[] } = ctx.request.body;
   const postService = new PostService();
@@ -77,11 +77,7 @@ export const removeMany: Middleware = async (ctx) => {
   if (result.ok && result.n === ids.length) {
     ctx.status = StatusCodes.NO_CONTENT;
   } else {
-    throw new BadRequest({
-      location: 'posts/ctrl.removeMany',
-      error: '선택 된 게시물 삭제 실패 or 부분 삭제',
-      log: result,
-    });
+    throw new BadRequest({ message: '선택 된 게시물 삭제 실패 또는 부분 삭제' });
   }
 };
 
@@ -92,14 +88,14 @@ export const update: Middleware = async (ctx) => {
     tags: Joi.array().items(Joi.string()),
   });
   if (!validateBody(ctx, schema)) {
-    throw new BadRequest({ location: 'validateBody', error: 'schema 오류', log: ctx.state.error });
+    throw new BadRequest();
   }
   const { id }: { id: string } = ctx.params;
   const postBody = ctx.request.body as RequestBody;
   const postService = new PostService();
   const result = await postService.updateOnePost(id, postBody);
   if (!result.ok || !result.value) {
-    throw new BadRequest({ location: 'posts/ctrl.remove', log: result });
+    throw new BadRequest({ message: '게시물 수정 실패' });
   }
   ctx.status = StatusCodes.NO_CONTENT;
 };

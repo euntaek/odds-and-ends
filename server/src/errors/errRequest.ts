@@ -1,48 +1,35 @@
 import { StatusCodes } from 'http-status-codes';
 
-interface IErrorsBody {
-  location?: string;
-  error?: string;
+interface ErrorParmas {
+  message?: string;
+  log?: any;
 }
-
 export abstract class RequestError extends Error {
   statusCode: number;
-  detail?: IErrorsBody;
-  log?: any;
+  log: any;
   constructor(message?: string) {
     super(message);
   }
 }
-
 export class InternalServerError extends RequestError {
-  constructor(errorParams?: { location?: string; error?: string; log?: any }) {
-    super('서버 오류입니다.');
+  constructor(errorParams?: ErrorParmas) {
+    super(errorParams?.message || '내부 서버 오류');
+    this.log = errorParams?.log;
     this.statusCode = StatusCodes.INTERNAL_SERVER_ERROR;
-    if (errorParams) {
-      this.detail = { location: errorParams.location, error: errorParams.error };
-      this.log = errorParams.log;
-    }
   }
 }
-
 export class BadRequest extends RequestError {
-  constructor(errorParams?: { location?: string; error?: string; log?: any }) {
-    super('유효하지 않은 요청입니다.');
+  constructor(errorParams?: ErrorParmas) {
+    super(errorParams?.message || '유효하지 않은 요청');
+    this.log = errorParams?.log;
     this.statusCode = StatusCodes.BAD_REQUEST;
-    if (errorParams) {
-      this.detail = { location: errorParams.location, error: errorParams.error };
-      this.log = errorParams.log;
-    }
   }
 }
 
 export class NotFound extends RequestError {
-  constructor(errorParams?: { location?: string; error?: string; log?: any }) {
-    super('리소스가 존재하지 않습니다.');
+  constructor(errorParams?: ErrorParmas) {
+    super(errorParams?.message || '리소스가 존재하지 않음');
+    this.log = errorParams?.log;
     this.statusCode = StatusCodes.NOT_FOUND;
-    if (errorParams) {
-      this.detail = { location: errorParams.location, error: errorParams.error };
-      this.log = errorParams.log;
-    }
   }
 }
