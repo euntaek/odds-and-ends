@@ -28,7 +28,7 @@ export default class Post extends BaseEntity {
   publishedDate: Date;
 
   @DeleteDateColumn()
-  deletedDate: Date | null;
+  deletedDate!: Date;
 
   static async getAll(skip: number, take: number): Promise<[Post[], number]> {
     try {
@@ -77,7 +77,7 @@ export default class Post extends BaseEntity {
     try {
       return await this.softRemove(posts);
     } catch (error) {
-      throw new InternalServerError({ location: 'PostModel.removeOne', log: error });
+      throw new InternalServerError({ location: 'PostModel.removeMany', log: error });
     }
   }
   static async updateOne(id: ObjectID, postBody: DeepPartial<Post>): Promise<void> {
@@ -85,7 +85,7 @@ export default class Post extends BaseEntity {
       const result = await this.update({ _id: id }, postBody);
       console.log(result);
     } catch (error) {
-      throw new InternalServerError({ location: 'PostModel.removeOne', log: error });
+      throw new InternalServerError({ location: 'PostModel.updateOne', log: error });
     }
   }
 }

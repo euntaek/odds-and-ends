@@ -1,10 +1,8 @@
-import { DeepPartial, getMongoRepository } from 'typeorm';
+import { DeepPartial } from 'typeorm';
 import { ObjectID } from 'mongodb';
 import Post from '../entity/Post';
 
 class PostService {
-  constructor(private postRepository = getMongoRepository(Post)) {}
-
   async getAllPost(page: number): Promise<[Post[], number]> {
     const skip = (page - 1) * 15;
     const take = 15;
