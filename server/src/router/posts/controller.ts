@@ -4,7 +4,7 @@ import Joi from 'joi';
 import joiObjectId from 'joi-objectid';
 
 import { BadRequest, NotFound } from '../../errors/errRequest';
-import { validateBody, refindPosts } from '../../lib/utils';
+import { validateJoi, refindPosts } from '../../lib/utils';
 import PostService from '../../services/PostService';
 
 const JoiObjectId = joiObjectId(Joi);
@@ -22,7 +22,7 @@ export const write: Middleware = async (ctx) => {
     tags: Joi.array().items(Joi.string()).required(),
     deletedDate: Joi.date().allow(null),
   });
-  if (!validateBody(ctx, schema)) {
+  if (!validateJoi(ctx, schema, 'body')) {
     throw new BadRequest({ message: ' shcema 오류', log: ctx.state.error });
   }
 
@@ -71,7 +71,7 @@ export const removeMany: Middleware = async (ctx) => {
   const schema = Joi.object().keys({
     checked: Joi.array().items(JoiObjectId()).required(),
   });
-  if (!validateBody(ctx, schema)) {
+  if (!validateJoi(ctx, schema, 'body')) {
     throw new BadRequest({ message: ' shcema 오류', log: ctx.state.error });
   }
 
@@ -89,7 +89,7 @@ export const update: Middleware = async (ctx) => {
     body: Joi.string(),
     tags: Joi.array().items(Joi.string()),
   });
-  if (!validateBody(ctx, schema)) {
+  if (!validateJoi(ctx, schema, 'body')) {
     throw new BadRequest({ message: ' shcema 오류', log: ctx.state.error });
   }
 

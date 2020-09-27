@@ -4,8 +4,14 @@ import { DeepPartial } from 'typeorm';
 
 import Post from '../entity/Post';
 
-export const validateBody = (ctx: RouterContext, schema: ObjectSchema): boolean => {
-  const validtaion = schema.validate(ctx.request.body);
+export const validateJoi = (
+  ctx: RouterContext,
+  schema: ObjectSchema,
+  reqPropertyName: 'body' | 'query' | 'params',
+): boolean => {
+  const validtaion = schema.validate(
+    reqPropertyName === 'params' ? ctx.params : ctx.request[reqPropertyName],
+  );
   console.log(validtaion);
   if (validtaion.error) {
     ctx.state.error = validtaion.error;
