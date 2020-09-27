@@ -2,22 +2,28 @@ import { DeepPartial } from 'typeorm';
 import { ObjectID } from 'mongodb';
 import Post from '../entity/Post';
 
-class PostService {
-  async getAllPost(page: number): Promise<[Post[], number]> {
+interface IPostService {
+  getAllPost(page: number): Promise<[Post[], number]>;
+  getOnePost(id: string): Promise<Post | undefined>;
+  createOnePost(post: DeepPartial<Post>): Promise<Post>;
+  removeOnePost(id: string): Promise<boolean>;
+  removeManyPost(ids: string[]): Promise<boolean>;
+  updateOnePost(id: string, postBody: DeepPartial<Post>): Promise<boolean>;
+}
+
+const PostService: IPostService = {
+  async getAllPost(page) {
     const skip = (page - 1) * 15;
     const take = 15;
     return await Post.getAll(skip, take);
-  }
-
-  async getOnePost(id: string): Promise<Post | undefined> {
+  },
+  async getOnePost(id) {
     return await Post.getOneById(id);
-  }
-
-  async createOnePost(post: DeepPartial<Post>): Promise<Post> {
+  },
+  async createOnePost(post) {
     return await Post.createOne(post);
-  }
-
-  async removeOnePost(id: string): Promise<boolean> {
+  },
+  async removeOnePost(id) {
     const targetPost = await Post.getOneById(id);
     console.log(targetPost);
     if (targetPost) {
@@ -25,9 +31,8 @@ class PostService {
       return true;
     }
     return false;
-  }
-
-  async removeManyPost(ids: string[]): Promise<boolean> {
+  },
+  async removeManyPost(ids) {
     const objectIds: ObjectID[] = ids.map((id) => new ObjectID(id));
     const targetPosts = await Post.getManyByIds(objectIds);
     if (targetPosts?.length === ids.length) {
@@ -35,17 +40,15 @@ class PostService {
       return true;
     }
     return false;
-  }
-
-  async updateOnePost(id: string, postBody: DeepPartial<Post>): Promise<boolean> {
+  },
+  async updateOnePost(id, postBody) {
     const targetPost = await Post.getOneById(id);
-
     if (targetPost) {
       await Post.updateOne(targetPost._id, postBody);
       return true;
     }
     return false;
-  }
-}
+  },
+};
 
 export default PostService;

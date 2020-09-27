@@ -27,8 +27,7 @@ export const write: Middleware = async (ctx) => {
   }
 
   const postBody: RequestBody = ctx.request.body;
-  const postService = new PostService();
-  const post = await postService.createOnePost(postBody);
+  const post = await PostService.createOnePost(postBody);
 
   ctx.status = StatusCodes.CREATED;
   ctx.body = post;
@@ -37,8 +36,7 @@ export const write: Middleware = async (ctx) => {
 export const list: Middleware = async (ctx) => {
   const page = parseInt(ctx.query.page || '1', 10);
 
-  const postService = new PostService();
-  const [posts, postCount] = await postService.getAllPost(page);
+  const [posts, postCount] = await PostService.getAllPost(page);
   const refinedPosts = refindPosts(posts);
   const lastPage = Math.ceil(postCount / 15).toString();
 
@@ -49,9 +47,7 @@ export const list: Middleware = async (ctx) => {
 
 export const read: Middleware = async (ctx) => {
   const { id }: { id: string } = ctx.params;
-
-  const postService = new PostService();
-  const post = await postService.getOnePost(id);
+  const post = await PostService.getOnePost(id);
   if (!post) throw new NotFound({ message: '존재하지 않는 게시물' });
 
   ctx.status = StatusCodes.OK;
@@ -60,8 +56,7 @@ export const read: Middleware = async (ctx) => {
 
 export const remove: Middleware = async (ctx) => {
   const { id }: { id: string } = ctx.params;
-  const postService = new PostService();
-  const result = await postService.removeOnePost(id);
+  const result = await PostService.removeOnePost(id);
   if (!result) throw new BadRequest({ message: '게시물 삭제 실패', log: 'Not found targetPost' });
 
   ctx.status = StatusCodes.NO_CONTENT;
@@ -76,8 +71,7 @@ export const removeMany: Middleware = async (ctx) => {
   }
 
   const { checked: ids }: { checked: string[] } = ctx.request.body;
-  const postService = new PostService();
-  const result = await postService.removeManyPost(ids);
+  const result = await PostService.removeManyPost(ids);
   if (!result) throw new BadRequest({ message: '게시물 삭제 실패', log: 'Not found targetPosts' });
 
   ctx.status = StatusCodes.NO_CONTENT;
@@ -95,8 +89,7 @@ export const update: Middleware = async (ctx) => {
 
   const { id }: { id: string } = ctx.params;
   const postBody = ctx.request.body as RequestBody;
-  const postService = new PostService();
-  const result = await postService.updateOnePost(id, postBody);
+  const result = await PostService.updateOnePost(id, postBody);
   if (!result) throw new BadRequest({ message: '게시물 수정 실패', log: 'Not found targetPost' });
 
   ctx.status = StatusCodes.NO_CONTENT;
