@@ -23,7 +23,7 @@ export const write: Middleware = async (ctx) => {
     deletedDate: Joi.date().allow(null),
   });
   if (!validateJoi(ctx, schema, 'body')) {
-    throw new BadRequest({ message: ' shcema 오류', log: ctx.state.error });
+    throw new BadRequest({ message: 'shcema 오류', log: ctx.state.error });
   }
 
   const postBody: RequestBody = ctx.request.body;
@@ -67,7 +67,7 @@ export const removeMany: Middleware = async (ctx) => {
     checked: Joi.array().items(JoiObjectId()).required(),
   });
   if (!validateJoi(ctx, schema, 'body')) {
-    throw new BadRequest({ message: ' shcema 오류', log: ctx.state.error });
+    throw new BadRequest({ message: 'shcema 오류', log: ctx.state.error });
   }
 
   const { checked: ids }: { checked: string[] } = ctx.request.body;
@@ -84,7 +84,7 @@ export const update: Middleware = async (ctx) => {
     tags: Joi.array().items(Joi.string()),
   });
   if (!validateJoi(ctx, schema, 'body')) {
-    throw new BadRequest({ message: ' shcema 오류', log: ctx.state.error });
+    throw new BadRequest({ message: 'shcema 오류', log: ctx.state.error });
   }
 
   const { id }: { id: string } = ctx.params;
