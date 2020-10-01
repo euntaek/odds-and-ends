@@ -4,7 +4,8 @@ import Joi from 'joi';
 import joiObjectId from 'joi-objectid';
 
 import { BadRequest, NotFound } from '../../errors/errRequest';
-import { validateJoi, refindPosts } from '../../lib/utils';
+import { validateJoi } from '../../lib/utils';
+import { refindPosts } from '../../lib/posts';
 import PostService from '../../services/PostService';
 
 const JoiObjectId = joiObjectId(Joi);
