@@ -1,5 +1,3 @@
-import { DeepPartial } from 'typeorm';
-
 import User from '../entity/User';
 import EmailAuth from '../entity/EmailAuth';
 import { setPasswordEncryption } from '../lib/auth';
@@ -13,6 +11,8 @@ interface IAuthService {
   }): Promise<UserInfo>;
   createOneEmailAuth(type: 'register', email: string, token: string): Promise<EmailAuth>;
   getOneEmailAuth(token: string): Promise<EmailAuth | undefined>;
+  findOneEmail(email: string): Promise<boolean>;
+  findOneDisplayName(displayName: string): Promise<boolean>;
   userCertification(email: string): Promise<{ success: boolean; error: ErrorParmas | null }>;
 }
 
@@ -31,8 +31,17 @@ const AuthService: IAuthService = {
   async getOneEmailAuth(token) {
     return await EmailAuth.getOneByToken(token);
   },
+  async findOneEmail(email) {
+    const user = await User.getOneByOptions({ email });
+    console.log(user);
+    return user ? true : false;
+  },
+  async findOneDisplayName(displayName) {
+    const user = await User.getOneByOptions({ displayName });
+    return user ? true : false;
+  },
   async userCertification(email) {
-    const user = await User.getOneByEmail(email);
+    const user = await User.getOneByOptions({ email });
     if (!user)
       return {
         success: false,

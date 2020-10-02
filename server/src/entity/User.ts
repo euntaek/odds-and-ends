@@ -6,6 +6,7 @@ import {
   CreateDateColumn,
   DeleteDateColumn,
   BaseEntity,
+  ObjectLiteral,
   DeepPartial,
 } from 'typeorm';
 import { InternalServerError } from '../errors/errRequest';
@@ -41,9 +42,10 @@ export default class User extends BaseEntity {
       throw new InternalServerError({ location: 'UserModel.createOne', log: error });
     }
   }
-  static async getOneByEmail(email: string): Promise<User | undefined> {
+  static async getOneByOptions(options: ObjectLiteral): Promise<User | undefined> {
+    console.log(options);
     try {
-      return await this.findOne({ where: { email } });
+      return await this.findOne({ where: options });
     } catch (error) {
       throw new InternalServerError({ location: 'UserModel.getOnByEmail', log: error });
     }

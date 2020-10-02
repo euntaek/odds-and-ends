@@ -17,7 +17,11 @@ export const register: Middleware = async (ctx) => {
   }
   const schema = Joi.object().keys({
     email: Joi.string().email().required(),
-    displayName: Joi.string().min(3).max(8).required(),
+    displayName: Joi.string()
+      .regex(/^[a-z0-9-_]+$/)
+      .min(3)
+      .max(16)
+      .required(),
     password: Joi.string().min(6).max(24).required(),
   });
   if (!validateJoi(ctx, schema, 'body')) {
@@ -48,18 +52,39 @@ export const check: Middleware = async (ctx) => {
 export const logout: Middleware = async (ctx) => {
   ctx.status = StatusCodes.OK;
 };
-
-export const usernameVerification: Middleware = async (ctx) => {
+export const emailVerification: Middleware = async (ctx) => {
   const schema = Joi.object().keys({
-    username: Joi.string().min(3),
+    email: Joi.string().email().required(),
   });
   if (!validateJoi(ctx, schema, 'params')) {
     throw new BadRequest({ message: ' shcema 오류', log: ctx.state.error });
   }
 
-  const username: { username: string } = ctx.params;
-  // const result = await AuthService.findOneUser()
-  ctx.body = username;
+  const { email }: { email: string } = ctx.params;
+  const result = await AuthService.findOneEmail(email);
+  ctx.status = StatusCodes.OK;
+  ctx.body = result
+    ? { result, message: '이미 사용 중인 이메일입니다.' }
+    : { result, message: '사용 가능한 이메일입니다.' };
+};
+export const displayNameVerification: Middleware = async (ctx) => {
+  const schema = Joi.object().keys({
+    displayName: Joi.string()
+      .regex(/^[a-z0-9-_]+$/)
+      .min(3)
+      .max(16)
+      .required(),
+  });
+  if (!validateJoi(ctx, schema, 'params')) {
+    throw new BadRequest({ message: ' shcema 오류', log: ctx.state.error });
+  }
+
+  const { displayName }: { displayName: string } = ctx.params;
+  const result = await AuthService.findOneDisplayName(displayName);
+  ctx.status = StatusCodes.OK;
+  ctx.body = result
+    ? { result, message: '이미 사용 중인 닉네임입니다.' }
+    : { result, message: '사용 가능한 닉네임입니다.' };
 };
 
 export const emailConfirmation: Middleware = async (ctx) => {
