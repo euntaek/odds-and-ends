@@ -1,6 +1,6 @@
 import { StatusCodes } from 'http-status-codes';
 
-interface ErrorParmas {
+export interface ErrorParmas {
   message?: string;
   location?: string;
   log?: any;
