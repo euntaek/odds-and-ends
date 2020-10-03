@@ -1,5 +1,4 @@
 import nodemailer from 'nodemailer';
-import { RouterContext } from '@koa/router';
 
 interface MailParams {
   to: string;
@@ -18,10 +17,11 @@ const transporter = nodemailer.createTransport({
   },
 });
 
-const sendMail = async (
-  ctx: RouterContext,
-  { to, subject, html }: MailParams,
-): Promise<boolean> => {
+const sendMail = async ({
+  to,
+  subject,
+  html,
+}: MailParams): Promise<{ success: boolean; data: any; error: any }> => {
   try {
     const info = await transporter.sendMail({
       from: `심플게시판<${process.env.SMTPT_USER}>`,
@@ -30,10 +30,9 @@ const sendMail = async (
       html,
     });
     console.log('Message sent: %s', info.messageId);
-    return true;
+    return { success: true, data: info, error: null };
   } catch (error) {
-    ctx.state.error = error;
-    return false;
+    return { success: false, data: null, error };
   }
 };
 
