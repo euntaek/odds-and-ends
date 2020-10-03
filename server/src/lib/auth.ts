@@ -2,7 +2,7 @@ import bcrypt from 'bcrypt';
 import crypto from 'crypto';
 
 // password 암호화
-export const setPasswordEncryption = async (password: string): Promise<string> => {
+export const setEncryptionPassword = async (password: string): Promise<string> => {
   const SALT_OR_ROUNDS = 10;
   return await bcrypt.hash(password, SALT_OR_ROUNDS);
 };
