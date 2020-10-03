@@ -38,3 +38,12 @@ export class NotFound extends RequestError {
     this.statusCode = StatusCodes.NOT_FOUND;
   }
 }
+
+export class Conflict extends RequestError {
+  constructor(errorParams?: ErrorParmas) {
+    super(errorParams?.message || '리소스 충돌');
+    this.log = errorParams?.log;
+    this.location = errorParams?.location;
+    this.statusCode = StatusCodes.CONFLICT;
+  }
+}
