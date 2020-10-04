@@ -1,7 +1,6 @@
 import User from '../entity/User';
 import EmailAuth from '../entity/EmailAuth';
-import { setPasswordEncryption } from '../lib/auth';
-import { ErrorParmas } from '../errors/errRequest';
+import { setEncryptionPassword, generateToken } from '../lib/auth';
 
 interface IAuthService {
   createOneUser(registerData: {
@@ -9,11 +8,12 @@ interface IAuthService {
     displayName: string;
     password: string;
   }): Promise<UserInfo>;
-  createOneEmailAuth(type: 'register', email: string, token: string): Promise<EmailAuth>;
+  getOneUser(email: string): Promise<User | undefined>;
+  createOneEmailAuth(type: 'register', email: string): Promise<EmailAuth>;
   getOneEmailAuth(token: string): Promise<EmailAuth | undefined>;
   findOneEmail(email: string): Promise<boolean>;
   findOneDisplayName(displayName: string): Promise<boolean>;
-  userCertification(email: string): Promise<{ success: boolean; error: ErrorParmas | null }>;
+  userCertification(email: string): Promise<boolean>;
 }
 
 const AuthService: IAuthService = {
@@ -21,12 +21,16 @@ const AuthService: IAuthService = {
     const user = {
       email: email,
       displayName: displayName,
-      hashedPassword: await setPasswordEncryption(password),
+      hashedPassword: await setEncryptionPassword(password),
     };
     return await User.createOne(user);
   },
-  async createOneEmailAuth(type, email, token) {
-    return await EmailAuth.createOne(type, email, token);
+  async getOneUser(email) {
+    return await User.getOneByOptions({ email });
+  },
+  async createOneEmailAuth(type, email) {
+    const authToken = generateToken();
+    return await EmailAuth.createOne(type, email, authToken);
   },
   async getOneEmailAuth(token) {
     return await EmailAuth.getOneByToken(token);
@@ -42,14 +46,11 @@ const AuthService: IAuthService = {
   },
   async userCertification(email) {
     const user = await User.getOneByOptions({ email });
-    if (!user)
-      return {
-        success: false,
-        error: { message: '존재하지 않는 사용자', loaction: 'auth.userCertification' },
-      };
+    if (!user) return false;
+
     user.isCertified = true;
     await user.save();
-    return { success: true, error: null };
+    return true;
   },
 };
 

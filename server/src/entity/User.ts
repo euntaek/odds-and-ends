@@ -9,7 +9,10 @@ import {
   ObjectLiteral,
   DeepPartial,
 } from 'typeorm';
+import bcrypt from 'bcrypt';
+
 import { InternalServerError } from '../errors/errRequest';
+import { generateJWT } from '../lib/auth';
 
 @Entity()
 export default class User extends BaseEntity {
@@ -33,6 +36,29 @@ export default class User extends BaseEntity {
 
   @DeleteDateColumn()
   deletedDate!: Date;
+
+  async checkPassword(password: string): Promise<boolean> {
+    return await bcrypt.compare(password, this.hashedPassword);
+  }
+  async generateUserToken(): Promise<string> {
+    try {
+      return await generateJWT(
+        {
+          _id: this._id.toString(),
+          email: this.email,
+          displayName: this.displayName,
+          isCertified: this.isCertified,
+        },
+        { expiresIn: '7d' },
+      );
+    } catch (error) {
+      throw new InternalServerError({
+        message: '토큰 생성 실패',
+        location: 'UserModel.generateUserToken',
+        log: error,
+      });
+    }
+  }
 
   static async createOne(user: DeepPartial<User>): Promise<UserInfo> {
     try {

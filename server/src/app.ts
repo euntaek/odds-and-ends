@@ -4,6 +4,7 @@ import cors from '@koa/cors';
 import bodyParser from 'koa-bodyparser';
 
 import router from './router';
+import jwtVerification from './lib/middlewares/jwtVerification';
 import { RequestError } from './errors/errRequest';
 
 const app = new Koa();
@@ -29,6 +30,7 @@ app.use(logger());
 app.use(cors());
 app.use(bodyParser());
 
+app.use(jwtVerification);
 app.use(router.routes()).use(router.allowedMethods());
 
 export default app;
