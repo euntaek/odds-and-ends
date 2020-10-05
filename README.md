@@ -1,18 +1,10 @@
-# simple-bulletin-board
-프론트부터 백엔드까지 혼자 만들어 보는 심플한 게시판
+# 160Char-server
+160Char은 160자 안으로 간단한 글들을 공유할 수 있는 마이크로 블로그 서비스입니다. 
 
 ## Project Stack
-
-### Client
-- Typescript
-- React
-- Reat Router
-- Redux
-- Emotion
-
-### Server
 - Node.js
 - Typescript
 - Koa
-- MongoDB
+- Postgresql
+- Redis
 - TypeORM
