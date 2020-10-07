@@ -31,7 +31,7 @@ export default class Post {
   updated_at!: Date;
 
   @DeleteDateColumn({ nullable: true, default: null })
-  delted_at!: Date | null;
+  deleted_at!: Date | null;
 
   @ManyToMany(() => Tag)
   @JoinTable({
