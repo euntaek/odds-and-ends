@@ -1,79 +1,80 @@
 import {
   Entity,
-  ObjectIdColumn,
+  PrimaryGeneratedColumn,
   Column,
-  ObjectID,
+  Generated,
   CreateDateColumn,
-  DeleteDateColumn,
-  BaseEntity,
-  ObjectLiteral,
-  DeepPartial,
+  UpdateDateColumn,
+  OneToOne,
 } from 'typeorm';
 import bcrypt from 'bcrypt';
+
+import Profile from './Profile';
 
 import { InternalServerError } from '../errors/errRequest';
 import { generateJWT } from '../lib/auth';
 
 @Entity()
-export default class User extends BaseEntity {
-  @ObjectIdColumn()
-  _id: ObjectID;
+export default class User {
+  @PrimaryGeneratedColumn()
+  id!: number;
 
-  @Column({ unique: true })
-  email: string;
+  @Column({ type: 'uuid', unique: true })
+  @Generated('uuid')
+  _id!: string;
 
-  @Column({ unique: true })
-  displayName: string;
-
-  @Column()
-  hashedPassword: string;
+  @Column({ unique: true, type: 'varchar', length: 255 })
+  email!: string;
 
   @Column()
-  isCertified: boolean;
+  hashed_password!: string;
+
+  @Column({ default: false, type: 'boolean' })
+  is_certified!: boolean;
 
   @CreateDateColumn()
-  publishedDate: Date;
+  created_at!: Date;
 
-  @DeleteDateColumn()
-  deletedDate!: Date;
+  @UpdateDateColumn()
+  updated_at!: Date;
 
-  async checkPassword(password: string): Promise<boolean> {
-    return await bcrypt.compare(password, this.hashedPassword);
-  }
-  async generateUserToken(): Promise<string> {
-    try {
-      return await generateJWT(
-        {
-          _id: this._id.toString(),
-          email: this.email,
-          displayName: this.displayName,
-          isCertified: this.isCertified,
-        },
-        { expiresIn: '7d' },
-      );
-    } catch (error) {
-      throw new InternalServerError({
-        message: '토큰 생성 실패',
-        location: 'UserModel.generateUserToken',
-        log: error,
-      });
-    }
-  }
-
-  static async createOne(user: DeepPartial<User>): Promise<UserInfo> {
-    try {
-      const createdUser = await this.create({ ...user, isCertified: false }).save();
-      return { email: createdUser.email, displayName: createdUser.displayName };
-    } catch (error) {
-      throw new InternalServerError({ location: 'UserModel.createOne', log: error });
-    }
-  }
-  static async getOneByOptions(options: ObjectLiteral): Promise<User | undefined> {
-    console.log(options);
-    try {
-      return await this.findOne({ where: options });
-    } catch (error) {
-      throw new InternalServerError({ location: 'UserModel.getOnByEmail', log: error });
-    }
-  }
+  @OneToOne(() => Profile, (profile) => profile.user)
+  profile: Profile;
 }
+// async checkPassword(password: string): Promise<boolean> {
+//   return await bcrypt.compare(password, this.hashed_password);
+// }
+// async generateUserToken(): Promise<string> {
+//   try {
+//     return await generateJWT(
+//       {
+//         _id: this._id.toString(),
+//         email: this.email,
+//         isCertified: this.is_certified,
+//       },
+//       { expiresIn: '7d' },
+//     );
+//   } catch (error) {
+//     throw new InternalServerError({
+//       message: '토큰 생성 실패',
+//       location: 'UserModel.generateUserToken',
+//       log: error,
+//     });
+//   }
+
+// static async createOne(user: DeepPartial<User>): Promise<UserInfo> {
+//   try {
+//     const createdUser = await this.create({ ...user, isCertified: false }).save();
+//     return { email: createdUser.email, displayName: createdUser.displayName };
+//   } catch (error) {
+//     throw new InternalServerError({ location: 'UserModel.createOne', log: error });
+//   }
+// }
+// static async getOneByOptions(options: ObjectLiteral): Promise<User | undefined> {
+//   console.log(options);
+//   try {
+//     return await this.findOne({ where: options });
+//   } catch (error) {
+//     throw new InternalServerError({ location: 'UserModel.getOnByEmail', log: error });
+//   }
+// }

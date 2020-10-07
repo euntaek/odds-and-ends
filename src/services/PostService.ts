@@ -1,5 +1,4 @@
-import { DeepPartial } from 'typeorm';
-import { ObjectID } from 'mongodb';
+import { DeepPartial, ObjectID } from 'typeorm';
 import Post from '../entity/Post';
 
 interface IPostService {

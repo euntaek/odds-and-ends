@@ -7,7 +7,7 @@ module.exports = {
   database: process.env.TYPEORM_DATABASE,
   synchronize: process.env.TYPEORM_SYNCHRONIZE === 'true',
   logging: process.env.TYPEORM_LOGGING === 'true',
-  // dropSchema: process.env.TYPEORM_DROPSCHEMA === 'true',
+  dropSchema: process.env.TYPEORM_DROPSCHEMA === 'true',
   entities: [process.env.TYPEORM_ENTITIES],
   migrations: [process.env.TYPEORM_MIGRATIONS],
   subscribers: [process.env.TYPEORM_SUBSCRIBERS],

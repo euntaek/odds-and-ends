@@ -1,5 +1,5 @@
 import 'reflect-metadata';
-import 'mongodb';
+import 'pg';
 import { createConnection, getConnection } from 'typeorm';
 
 export default {
