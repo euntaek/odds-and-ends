@@ -6,11 +6,12 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
   DeleteDateColumn,
-  ManyToMany,
-  JoinTable,
+  ManyToOne,
+  JoinColumn,
 } from 'typeorm';
 
-import Tag from './Tag';
+import Post from './Post';
+import User from './User';
 
 @Entity()
 export default class Comment {
@@ -22,7 +23,13 @@ export default class Comment {
   _id!: string;
 
   @Column({ type: 'varchar', length: 255 })
-  body!: string;
+  text!: string;
+
+  @Column({ type: 'uuid', nullable: true, default: null })
+  ref_comment!: string | null;
+
+  @Column({ type: 'smallint', default: 0 })
+  reply_count!: number;
 
   @CreateDateColumn()
   created_at!: Date;
@@ -31,13 +38,13 @@ export default class Comment {
   updated_at!: Date;
 
   @DeleteDateColumn({ nullable: true, default: null })
-  delted_at!: Date | null;
+  deleted_at!: Date | null;
 
-  @ManyToMany(() => Tag)
-  @JoinTable({
-    name: 'post_and_tag',
-    joinColumn: { referencedColumnName: '_id' },
-    inverseJoinColumn: { referencedColumnName: '_id' },
-  })
-  tags!: Tag[];
+  @ManyToOne(() => User)
+  @JoinColumn({ referencedColumnName: '_id' })
+  user!: User;
+
+  @ManyToOne(() => Post, { cascade: true })
+  @JoinColumn({ referencedColumnName: '_id' })
+  posts!: Post[];
 }

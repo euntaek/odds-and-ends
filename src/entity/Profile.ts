@@ -22,8 +22,8 @@ export default class Profile {
   @Column({ length: 255 })
   display_name: string;
 
-  @Column({ nullable: true })
-  thumbanil: string;
+  @Column({ type: 'varchar', nullable: true, default: null })
+  thumbanil: string | null;
 
   @Column('timestamptz')
   @CreateDateColumn()

@@ -6,6 +6,7 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
   OneToOne,
+  OneToMany,
 } from 'typeorm';
 import bcrypt from 'bcrypt';
 
@@ -13,6 +14,8 @@ import Profile from './Profile';
 
 import { InternalServerError } from '../errors/errRequest';
 import { generateJWT } from '../lib/auth';
+import Post from './Post';
+import Comment from './Comment';
 
 @Entity()
 export default class User {
@@ -38,8 +41,14 @@ export default class User {
   @UpdateDateColumn()
   updated_at!: Date;
 
-  @OneToOne(() => Profile, (profile) => profile.user)
-  profile: Profile;
+  @OneToOne((type) => Profile, (profile) => profile.user)
+  profile!: Profile;
+
+  @OneToMany((type) => Post, (post) => post.user)
+  posts!: Post[];
+
+  @OneToMany((type) => Comment, (comment) => comment.user)
+  comments!: Comment[];
 }
 // async checkPassword(password: string): Promise<boolean> {
 //   return await bcrypt.compare(password, this.hashed_password);

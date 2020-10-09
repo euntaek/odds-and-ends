@@ -5,7 +5,10 @@ import {
   Generated,
   CreateDateColumn,
   UpdateDateColumn,
+  Index,
+  ManyToMany,
 } from 'typeorm';
+import Post from './Post';
 
 @Entity()
 export default class Tag {
@@ -16,6 +19,7 @@ export default class Tag {
   @Generated('uuid')
   _id!: string;
 
+  @Index()
   @Column({ type: 'varchar', length: '255' })
   name: string;
 
@@ -24,4 +28,7 @@ export default class Tag {
 
   @UpdateDateColumn()
   updated_at!: Date;
+
+  @ManyToMany((type) => Post, (post) => post.tags)
+  posts: Tag[];
 }

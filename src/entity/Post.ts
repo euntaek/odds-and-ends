@@ -6,11 +6,16 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
   DeleteDateColumn,
+  OneToMany,
+  ManyToOne,
   ManyToMany,
+  JoinColumn,
   JoinTable,
 } from 'typeorm';
 
+import User from './User';
 import Tag from './Tag';
+import Comment from './Comment';
 
 @Entity()
 export default class Post {
@@ -33,6 +38,13 @@ export default class Post {
   @DeleteDateColumn({ nullable: true, default: null })
   deleted_at!: Date | null;
 
+  @ManyToOne((type) => User, { eager: true, onDelete: 'CASCADE' })
+  @JoinColumn({ referencedColumnName: '_id' })
+  user!: User;
+
+  @OneToMany((type) => Comment, (comment) => comment.posts)
+  comments!: string;
+  // @OneToMany(type=> )
   @ManyToMany(() => Tag)
   @JoinTable({
     name: 'post_and_tag',
