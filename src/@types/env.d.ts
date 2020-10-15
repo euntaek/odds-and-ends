@@ -26,11 +26,11 @@ declare namespace NodeJS {
     REDIS_DB: string;
     REDIS_PASSWORD: string;
 
-    SMTPT_SERVICE: string;
-    SMTPT_HOST: string;
-    SMTPT_PORT: string;
-    SMTPT_SECURE: string;
-    SMTPT_USER: string;
-    SMTPT_PASSWORD: string;
+    SMTP_SERVICE: string;
+    SMTP_HOST: string;
+    SMTP_PORT: string;
+    SMTP_SECURE: string;
+    SMTP_USER: string;
+    SMTP_PASSWORD: string;
   }
 }
