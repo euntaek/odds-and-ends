@@ -1,5 +1,14 @@
 import nodemailer from 'nodemailer';
 
+import {
+  SMTP_SERVICE,
+  SMTP_HOST,
+  SMTP_PORT,
+  SMTP_SECURE,
+  SMTP_USER,
+  SMTP_PASSWORD,
+} from '../constans/smtp';
+
 interface MailParams {
   to: string;
   subject: string;
@@ -7,13 +16,13 @@ interface MailParams {
 }
 
 const transporter = nodemailer.createTransport({
-  service: process.env.SMTPT_SERVICE,
-  host: process.env.SMTPT_HOST,
-  port: parseInt(process.env.SMTPT_PORT as string, 10),
-  secure: process.env.SMTPT_SECURE === 'true',
+  service: SMTP_SERVICE,
+  host: SMTP_HOST,
+  port: SMTP_PORT,
+  secure: SMTP_SECURE,
   auth: {
-    user: process.env.SMTPT_USER,
-    pass: process.env.SMTPT_PASSWORD,
+    user: SMTP_USER,
+    pass: SMTP_PASSWORD,
   },
 });
 
@@ -24,7 +33,7 @@ const sendMail = async ({
 }: MailParams): Promise<{ success: boolean; data: any; error: any }> => {
   try {
     const info = await transporter.sendMail({
-      from: `심플게시판<${process.env.SMTPT_USER}>`,
+      from: `160chars<${SMTP_USER}>`,
       to,
       subject,
       html,
