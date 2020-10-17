@@ -1,9 +1,11 @@
 import { ReturnData } from './return';
 import { ErroInfo } from './error';
+
 declare global {
   interface UserInfo {
     _id: string;
     email: string;
+    username: string;
     profile: {
       _id: string;
       display_name: string;
