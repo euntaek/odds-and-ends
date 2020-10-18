@@ -26,22 +26,19 @@ const transporter = nodemailer.createTransport({
   },
 });
 
-const sendMail = async ({
-  to,
-  subject,
-  html,
-}: MailParams): Promise<{ success: boolean; data: any; error: any }> => {
+const sendMail = async ({ to, subject, html }: MailParams): Promise<ServiceData> => {
   try {
     const info = await transporter.sendMail({
-      from: `160chars<${SMTP_USER}>`,
+      from: `160CHARS<${SMTP_USER}>`,
       to,
       subject,
       html,
     });
-    console.log('Message sent: %s', info.messageId);
-    return { success: true, data: info, error: null };
+    console.log('Message sent message ID: %s', info.messageId);
+    console.log('Message sent info: %s', info);
+    return { success: true, data: info };
   } catch (error) {
-    return { success: false, data: null, error };
+    return { success: false, error };
   }
 };
 

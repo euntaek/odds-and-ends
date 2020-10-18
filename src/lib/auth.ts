@@ -6,7 +6,7 @@ import jwt, { SignOptions } from 'jsonwebtoken';
 const { SECRET_KEY } = process.env;
 
 // password 암호화
-export const setEncryptionPassword = async (password: string): Promise<string> => {
+export const hashPssword = async (password: string): Promise<string> => {
   const SALT_OR_ROUNDS = 10;
   return await bcrypt.hash(password, SALT_OR_ROUNDS);
 };
@@ -23,7 +23,7 @@ interface IPayload {
 }
 export const generateJWT = async (payload: IPayload, options?: SignOptions): Promise<string> => {
   const signOptions: SignOptions = {
-    issuer: '200char.com',
+    issuer: '160chars.com',
     expiresIn: '7d',
     ...options,
   };

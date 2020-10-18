@@ -1,21 +1,17 @@
-import { DeepPartial } from 'typeorm';
-
-import User from '../entity/User';
-
 export const createEmailTemplate = (
-  type: 'register',
-  displayName: string,
+  type: 'register' | 'resetPassword',
+  user: UserInfo,
   token: string,
 ): { subject: string; html: string } => {
   switch (type) {
     case 'register':
-      return confirmationEmail(displayName, token);
+      return confirmationTemplate(user.profile.display_name, token);
     default:
       return { html: '', subject: '' };
   }
 };
 
-const confirmationEmail = (displayName: string, token: string) => {
+const confirmationTemplate = (displayName: string, token: string) => {
   const subject = '[심플 게시판] 이메일 인증을 해주세요.';
   const html = `
   <div style="padding: 26px 18px">
@@ -48,7 +44,7 @@ const confirmationEmail = (displayName: string, token: string) => {
         </p>
         <a
           class="btn"
-          href=http://localhost:3000/email_confirmation/${token}
+          href=http://localhost:3000/auth/test/${token}
           style="
             text-decoration: none;
             color: white;

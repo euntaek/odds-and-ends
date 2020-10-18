@@ -30,7 +30,7 @@ const schemaMap = {
   thumbnail: Joi.string().max(255),
   accessToken: Joi.string().required(),
   refreshToken: Joi.string().required(),
-  emailAuthToken: Joi.string().required(),
+  emailAuthToken: Joi.string().hex().length(64),
   body: Joi.string().max(160).required(),
   tags: Joi.array().items(Joi.string()).required(),
 };
@@ -51,7 +51,7 @@ export const generateSchema: GenerateSchema = keys => {
 export const validateSchema = (
   ctx: RouterContext,
   schema: ObjectSchema,
-  reqPropertyName: 'body' | 'query' | 'params',
+  reqPropertyName: 'body' | 'query' | 'params' = 'body',
 ): boolean => {
   const validtaion = schema.validate(
     reqPropertyName === 'params' ? ctx.params : ctx.request[reqPropertyName],

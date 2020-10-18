@@ -1,4 +1,5 @@
 import {
+  BaseEntity,
   Entity,
   PrimaryGeneratedColumn,
   Column,
@@ -7,11 +8,12 @@ import {
   UpdateDateColumn,
   OneToOne,
   JoinColumn,
+  DeepPartial,
 } from 'typeorm';
 import User from './User';
 
-@Entity()
-export default class Profile {
+@Entity('profile')
+export default class Profile extends BaseEntity {
   @PrimaryGeneratedColumn()
   id!: number;
 
@@ -19,21 +21,23 @@ export default class Profile {
   @Generated('uuid')
   _id!: string;
 
-  @Column({ length: 255 })
+  @Column({ type: 'varchar', length: 255 })
   display_name: string;
 
-  @Column({ type: 'varchar', nullable: true, default: null })
-  thumbanil: string | null;
+  @Column({ type: 'varchar', default: 'thumbnail:url' })
+  thumbnail: string;
 
-  @Column('timestamptz')
-  @CreateDateColumn()
+  @CreateDateColumn({ type: 'timestamptz' })
   created_at!: Date;
 
-  @Column('timestamp')
-  @UpdateDateColumn()
+  @UpdateDateColumn({ type: 'timestamptz' })
   updated_at!: Date;
 
-  @OneToOne(() => User, (user) => user.profile, { onDelete: 'CASCADE' })
+  @OneToOne(() => User, user => user.profile, { onDelete: 'CASCADE' })
   @JoinColumn({ referencedColumnName: '_id' })
-  user: User;
+  user!: User;
+
+  static async createOne(profile: DeepPartial<Profile>): Promise<Profile> {
+    return this.create(profile);
+  }
 }

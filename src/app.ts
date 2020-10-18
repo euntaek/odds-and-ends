@@ -31,6 +31,6 @@ app.use(cors());
 app.use(bodyParser());
 
 // app.use(jwtVerification);
-// app.use(router.routes()).use(router.allowedMethods());
+app.use(router.routes()).use(router.allowedMethods());
 
 export default app;
