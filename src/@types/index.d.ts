@@ -13,6 +13,13 @@ declare global {
       thumbnail: string;
     };
   }
+  interface UserToken {
+    accessToken: string;
+    refreshToken: string;
+  }
+  interface LoginData extends UserToken {
+    user: UserInfo;
+  }
   interface ServiceData<T = any> extends ReturnData<T> {}
   interface ErrorParams extends ErroInfo {}
 }

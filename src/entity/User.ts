@@ -17,7 +17,15 @@ import Profile from './Profile';
 import Post from './Post';
 import Comment from './Comment';
 
-import { generateJWT } from '../lib/auth';
+import { generateJWT } from '../utils/auth';
+import { InternalServerError } from '../errors/errRequest';
+
+import {
+  ACCESS_TOKEN_SECRET,
+  REFRESH_TOKEN_SECRET,
+  ACCESS_TOKEN_EXPIRES_IN,
+  REFRESH_TOKEN_EXPIRES_IN,
+} from '../constans';
 
 @Entity('user')
 export default class User extends BaseEntity {
@@ -73,9 +81,26 @@ export default class User extends BaseEntity {
     return await bcrypt.compare(password, this.hashed_password);
   }
 
+  async generateUserToken(): Promise<UserToken> {
+    try {
+      const accessToken: string = await generateJWT({ _id: this._id }, ACCESS_TOKEN_SECRET, {
+        expiresIn: ACCESS_TOKEN_EXPIRES_IN,
+      });
+      const refreshToken: string = await generateJWT({ _id: this._id }, REFRESH_TOKEN_SECRET, {
+        expiresIn: REFRESH_TOKEN_EXPIRES_IN,
+      });
+      return { accessToken, refreshToken };
+    } catch (error) {
+      throw new InternalServerError({ message: 'Failed to issue user jwt', error });
+    }
+  }
+
   // static methods
   static async createOne(userForm: DeepPartial<User>): Promise<User> {
     return this.create(userForm);
+  }
+  static async findOneByUUID(uuid: string): Promise<User | undefined> {
+    return await this.findOne({ where: { _id: uuid } });
   }
   static async findOneByEmail(email: string): Promise<User | undefined> {
     return await this.findOne({ where: { email } });

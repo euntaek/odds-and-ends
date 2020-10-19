@@ -3,10 +3,10 @@ import { DeepPartial, getManager } from 'typeorm';
 import User from '../entity/User';
 import Profile from '../entity/Profile';
 import EmailAuthentication from '../entity/EmailAuthentication';
-import { hashPssword, generateToken } from '../lib/auth';
+import { hashPssword, generateRandomToken } from '../utils/auth';
 import { InternalServerError } from '../errors/errRequest';
 import { createEmailTemplate } from '../etc/emailTemplates';
-import sendMail from '../lib/sendMail';
+import sendMail from '../utils/sendMail';
 
 function successData<T>(data?: T): ServiceData<T> {
   return { success: true, data };
@@ -19,7 +19,7 @@ function failureData(error: ErrorParams | string) {
 
 class AuthService {
   // 로그인
-  async login(loginForm: { email: string; password: string }): Promise<ServiceData<UserInfo>> {
+  async login(loginForm: { email: string; password: string }): Promise<ServiceData<LoginData>> {
     try {
       const { email, password } = loginForm;
 
@@ -27,11 +27,12 @@ class AuthService {
       const user = await User.findOneByEmail(email);
 
       // 계정 존재 유무와 비밀번호 확인
-      if (user && (await user.checkPassword(password))) {
-        return successData(user.serialize());
+      if (!user || !(await user.checkPassword(password))) {
+        return failureData('이메일 또는 비밀번호를 잘못 입력하셨습니다.');
       }
-
-      return failureData('이메일 또는 비밀번호를 잘못 입력하셨습니다.');
+      // access token, refresh token 발급
+      const token = await user.generateUserToken();
+      return successData({ user: user.serialize(), ...token });
     } catch (error) {
       throw new InternalServerError({ message: '로그인 실패', error });
     }
@@ -75,7 +76,7 @@ class AuthService {
   async sendMail(type: 'register' | 'resetPassword', user: UserInfo): Promise<ServiceData> {
     try {
       const { _id: user_id, email } = user;
-      const token = generateToken();
+      const token = generateRandomToken();
 
       const emailAuth = await EmailAuthentication.createOne({ type, user_id, email, token });
       const emailTemplate = createEmailTemplate(type, user, emailAuth.token);
@@ -136,7 +137,7 @@ class AuthService {
       if (!user) {
         return failureData({ message: '사용자 인증에 실패했습니다.', error: 'User not found' });
       }
-      // 인증료료
+      // 인증완료
       const isConfirmed = await User.upadteOne(user.id, { is_confirmed: true });
       if (!isConfirmed) {
         throw new InternalServerError({
