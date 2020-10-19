@@ -10,9 +10,9 @@ import {
   NotFound,
   Unauthorized,
 } from '../../errors/errRequest';
-import { generateSchema, validateSchema } from '../../lib/reqValidation';
-import { generateToken, setTokenCookie } from '../../lib/auth';
+import { generateSchema, validateSchema } from '../../utils/reqValidation';
 
+// 회원가입
 export const register: Middleware = async ctx => {
   interface RequestBody {
     email: string;
@@ -48,6 +48,7 @@ export const register: Middleware = async ctx => {
   ctx.body = createdUser;
 };
 
+// 로그인
 export const login: Middleware = async ctx => {
   interface RequestBody {
     email: string;
@@ -68,69 +69,8 @@ export const login: Middleware = async ctx => {
   ctx.body = result.data;
 };
 
-//   const isValidPassword = await user.checkPassword(password);
-//   if (!isValidPassword) {
-//     throw new Unauthorized({ message: '입력하신 이메일 주소 혹은 비밀번호를 다시 확인해주세요' });
-//   }
-
-//   const token = await user.generateUserToken();
-//   setTokenCookie(ctx, token);
-
-//   ctx.status = StatusCodes.OK;
-//   ctx.body = { message: '로그인 성공' };
-// };
-
-// export const check: Middleware = async (ctx) => {
-//   const { user } = ctx.state;
-//   if (!user) throw new Unauthorized({ message: '로그인 중이 아닙니다.' });
-//   ctx.status = StatusCodes.OK;
-//   ctx.body = user;
-// };
-
-// export const logout: Middleware = async (ctx) => {
-//   ctx.cookies.set('access_token');
-//   ctx.status = StatusCodes.NO_CONTENT;
-// };
-
-// export const emailVerification: Middleware = async (ctx) => {
-//   const schema = Joi.object().keys({ email: validation.email });
-//   if (!validateJoi(ctx, schema, 'params')) {
-//     throw new BadRequest({ message: ' shcema 오류', log: ctx.state.error });
-//   }
-
-//   const { email }: { email: string } = ctx.params;
-
-//   const result = await AuthService.findOneEmail(email);
-//   if (result) throw new Conflict({ message: '이미 사용 중인 이메일입니다.' });
-
-//   ctx.status = StatusCodes.OK;
-//   ctx.body = { message: '사용 가능한 이메일입니다.' };
-// };
-
-// export const displayNameVerification: Middleware = async (ctx) => {
-//   const schema = Joi.object().keys({ displayName: validation.displayName });
-//   if (!validateJoi(ctx, schema, 'params')) {
-//     throw new BadRequest({ message: ' shcema 오류', log: ctx.state.error });
-//   }
-
-//   const { displayName }: { displayName: string } = ctx.params;
-
-//   const result = await AuthService.findOneDisplayName(displayName);
-//   if (result) throw new Conflict({ message: '이미 사용 중인 닉네임입니다.' });
-
-//   ctx.status = StatusCodes.OK;
-//   ctx.body = { message: '사용 가능한 닉네임입니다.' };
-// };
-
+// 이메일 인증
 export const emailConfirmation: Middleware = async ctx => {
-  const { emailAuthToken }: { emailAuthToken: string } = ctx.params;
-  const schema = generateSchema({ emailAuthToken });
-  if (!validateSchema(ctx, schema)) {
-    throw new BadRequest({ message: ' shcema 오류', error: ctx.state.error });
-  }
-};
-
-export const test: Middleware = async ctx => {
   const { emailAuthToken }: { emailAuthToken: string } = ctx.params;
 
   const schema = generateSchema({ emailAuthToken });
@@ -153,19 +93,35 @@ export const test: Middleware = async ctx => {
   ctx.body = 'User Confirmed!!';
 };
 
-//   const { token }: { token: string } = ctx.request.body;
+// 테스트
+export const test: Middleware = async ctx => {
+  if (!ctx.state.user) {
+    ctx.status = StatusCodes.NOT_FOUND;
+    return;
+  }
 
-//   const emailAuth = await AuthService.getOneEmailAuth(token);
-//   if (!emailAuth) throw new BadRequest({ message: '만료 된 토큰' });
-//   if (emailAuth.type !== 'register') throw new BadRequest({ message: '잘못 된 토큰' });
-//   if (emailAuth.isVerified) throw new BadRequest({ message: '이미 사용 된 토큰' });
+  ctx.status = StatusCodes.OK;
+  ctx.body = ctx.state.user;
+};
 
-//   const result = await AuthService.userCertification(emailAuth.email);
-//   if (!result) throw new BadRequest({ message: '이메일 인증에 실패했습니다.' });
+// export const check: Middleware = async (ctx) => {
+//   const { user } = ctx.state;
+//   if (!user) throw new Unauthorized({ message: '로그인 중이 아닙니다.' });
+//   ctx.status = StatusCodes.OK;
+//   ctx.body = user;
+// };
 
-//   emailAuth.isVerified = true;
-//   await emailAuth.save();
+// export const emailVerification: Middleware = async (ctx) => {
+//   const schema = Joi.object().keys({ email: validation.email });
+//   if (!validateJoi(ctx, schema, 'params')) {
+//     throw new BadRequest({ message: ' shcema 오류', log: ctx.state.error });
+//   }
+
+//   const { email }: { email: string } = ctx.params;
+
+//   const result = await AuthService.findOneEmail(email);
+//   if (result) throw new Conflict({ message: '이미 사용 중인 이메일입니다.' });
 
 //   ctx.status = StatusCodes.OK;
-//   ctx.body = { messgae: '이메일 인증 완료' };
+//   ctx.body = { message: '사용 가능한 이메일입니다.' };
 // };
