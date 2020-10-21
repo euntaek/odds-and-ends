@@ -72,6 +72,14 @@ class AuthService {
     return successData(user.serialize());
   }
 
+  // 새로고침
+  async refresh(_id: string): Promise<ServiceData<UserToken>> {
+    const user = await User.findOneByUUID(_id);
+    if (!user) return failureData({ message: '리프레쉬 실패', error: '사용자가 존재 하지 않음' });
+    const token = await user.generateUserToken();
+    return successData(token);
+  }
+
   // 이메일 전송
   async sendMail(type: 'register' | 'resetPassword', user: UserInfo): Promise<ServiceData> {
     try {
@@ -86,6 +94,7 @@ class AuthService {
       throw new InternalServerError({ message: '이메일 전송 실패', error });
     }
   }
+
   // 이메일 인증
   async emailAuthentication(
     emailAuthToken: string,

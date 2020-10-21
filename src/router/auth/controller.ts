@@ -1,16 +1,12 @@
 import { Middleware } from '@koa/router';
 import { StatusCodes } from 'http-status-codes';
+import jwt from 'jsonwebtoken';
 
 import AuthService from '../../services/AuthService';
 
-import {
-  BadRequest,
-  Conflict,
-  InternalServerError,
-  NotFound,
-  Unauthorized,
-} from '../../errors/errRequest';
+import { BadRequest, Conflict, NotFound, Unauthorized } from '../../errors/errRequest';
 import { generateSchema, validateSchema } from '../../utils/reqValidation';
+import { REFRESH_TOKEN_SECRET } from '../../constans';
 
 // 회원가입
 export const register: Middleware = async ctx => {
@@ -67,6 +63,28 @@ export const login: Middleware = async ctx => {
   }
   ctx.status = StatusCodes.OK;
   ctx.body = result.data;
+};
+
+// 리프레쉬
+export const refresh: Middleware = async ctx => {
+  const { refreshToken }: { refreshToken: string } = ctx.request.body;
+
+  const schema = generateSchema({ refreshToken });
+  if (!validateSchema(ctx, schema)) {
+    throw new BadRequest({ message: 'shcema 오류', error: ctx.state.error });
+  }
+
+  try {
+    const { _id }: { _id: string } = jwt.verify(refreshToken, REFRESH_TOKEN_SECRET) as any;
+    const authService = new AuthService();
+    const result = await authService.refresh(_id);
+    if (!result.success) throw new Unauthorized(result.error);
+
+    ctx.status = StatusCodes.OK;
+    ctx.body = result.data;
+  } catch (error) {
+    throw new Unauthorized({ message: '리프레쉬 실패', error });
+  }
 };
 
 // 이메일 인증
