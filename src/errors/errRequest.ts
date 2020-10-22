@@ -59,9 +59,21 @@ export class Unauthorized extends RequestError {
     if (typeof errorData === 'string') {
       super(errorData);
     } else {
-      super(errorData?.message || '권한이 없습니다.');
+      super(errorData?.message || '인증이 필요합니다.');
       this.error = errorData?.error;
     }
     this.statusCode = StatusCodes.UNAUTHORIZED;
+  }
+}
+
+export class Forbidden extends RequestError {
+  constructor(errorData?: ErrorParams | string) {
+    if (typeof errorData === 'string') {
+      super(errorData);
+    } else {
+      super(errorData?.message || '잘못 된 접근입니다.');
+      this.error = errorData?.error;
+    }
+    this.statusCode = StatusCodes.FORBIDDEN;
   }
 }
