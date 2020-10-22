@@ -1,26 +1,15 @@
 import Router from '@koa/router';
 
-import {
-  register,
-  login,
-  refresh,
-  // check,
-  // logout,
-  // emailVerification,
-  // displayNameVerification,
-  emailConfirmation,
-  test,
-} from './controller';
+import { register, login, refresh, emailConfirmation, duplicateCheck, test } from './controller';
+import { checkLoggedOut } from '../../middlewares';
 
 const auth = new Router();
 
-auth.post('/register', register);
-auth.post('/login', login);
+auth.post('/register', checkLoggedOut, register);
+auth.post('/login', checkLoggedOut, login);
 auth.post('/refresh', refresh);
-// auth.get('/check', check);
 auth.patch('/email_confirmation', emailConfirmation);
-// auth.get('/email/:email', emailVerification);
-// auth.get('/displayname/:displayName', displayNameVerification);
+auth.get('/duplicate_check', duplicateCheck);
 auth.get('/test', test);
 
 export default auth;

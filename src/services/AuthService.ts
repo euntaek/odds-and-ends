@@ -1,4 +1,4 @@
-import { DeepPartial, getManager } from 'typeorm';
+import { DeepPartial, FindOneOptions, getManager } from 'typeorm';
 
 import User from '../entity/User';
 import Profile from '../entity/Profile';
@@ -18,7 +18,7 @@ function failureData(error: ErrorParams | string) {
 }
 
 class AuthService {
-  // 로그인
+  // # 로그인
   async login(loginForm: { email: string; password: string }): Promise<ServiceData<LoginData>> {
     try {
       const { email, password } = loginForm;
@@ -30,15 +30,16 @@ class AuthService {
       if (!user || !(await user.checkPassword(password))) {
         return failureData('이메일 또는 비밀번호를 잘못 입력하셨습니다.');
       }
+
       // access token, refresh token 발급
       const token = await user.generateUserToken();
-      return successData({ user: user.serialize(), ...token });
+      return successData({ user, ...token });
     } catch (error) {
       throw new InternalServerError({ message: '로그인 실패', error });
     }
   }
 
-  // 화원가입
+  // # 화원가입
   async register(registerForm: {
     email: string;
     password: string;
@@ -48,9 +49,9 @@ class AuthService {
   }): Promise<ServiceData<UserInfo>> {
     const { email, password, username, displayName: display_name, thumbnail } = registerForm;
 
-    // 계정 유무 확인
+    //계정 유무 확인
     const exists = await User.findOneByEmail(email);
-    if (exists) return failureData('존재하는 계정입니다.');
+    if (exists) return failureData('존재하는 사용자입니다.');
 
     // 회원가입 트래잭션 (user, profile)
     const user = await getManager().transaction(async transactionalEntityManager => {
@@ -72,7 +73,7 @@ class AuthService {
     return successData(user.serialize());
   }
 
-  // 새로고침
+  // # 새로고침
   async refresh(_id: string): Promise<ServiceData<UserToken>> {
     const user = await User.findOneByUUID(_id);
     if (!user) return failureData({ message: '리프레쉬 실패', error: '사용자가 존재 하지 않음' });
@@ -80,7 +81,7 @@ class AuthService {
     return successData(token);
   }
 
-  // 이메일 전송
+  // # 이메일 전송
   async sendMail(type: 'register' | 'resetPassword', user: UserInfo): Promise<ServiceData> {
     try {
       const { _id: user_id, email } = user;
@@ -95,7 +96,7 @@ class AuthService {
     }
   }
 
-  // 이메일 인증
+  // # 이메일 인증
   async emailAuthentication(
     emailAuthToken: string,
     type: 'register' | 'resetPassword',
@@ -125,18 +126,8 @@ class AuthService {
       throw new InternalServerError({ message: '이메일 인증실패', error });
     }
   }
-  // async getOneEmailAuth(token: string) {
-  //   return await EmailAuthentication.getOneByToken(token);
-  // }
-  // async findOneEmail(email) {
-  //   const user = await User.getOneByOptions({ email });
-  //   console.log(user);
-  //   return user ? true : false;
-  // },
-  // async findOneDisplayName(displayName) {
-  //   const user = await User.getOneByOptions({ displayName });
-  //   return user ? true : false;
-  // },
+
+  // # 유저 인증
   async userConfirmation(emailAuth: DeepPartial<EmailAuthentication>): Promise<ServiceData> {
     try {
       // 계정 이메일, uuid 확인
@@ -158,6 +149,12 @@ class AuthService {
     } catch (error) {
       throw new InternalServerError({ message: '사용자 인증 실패', error });
     }
+  }
+
+  async findUsersByOptions(options: FindOneOptions<User>): Promise<ServiceData<UserInfo>> {
+    const user = await User.findOneByOptions(options);
+    if (!user) return failureData('존재하지 않는 사용자입니다.');
+    return successData(user.serialize());
   }
 }
 

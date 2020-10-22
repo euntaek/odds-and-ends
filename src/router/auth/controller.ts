@@ -8,7 +8,7 @@ import { BadRequest, Conflict, NotFound, Unauthorized } from '../../errors/errRe
 import { generateSchema, validateSchema } from '../../utils/reqValidation';
 import { REFRESH_TOKEN_SECRET } from '../../constans';
 
-// 회원가입
+// # 회원가입
 export const register: Middleware = async ctx => {
   interface RequestBody {
     email: string;
@@ -33,7 +33,7 @@ export const register: Middleware = async ctx => {
 
   const createdUser = registerResult.data as UserInfo;
 
-  // send emaill
+  // 회원가입 인증 이메일 전송
   const sendMailResult = await authService.sendMail('register', createdUser);
 
   if (!sendMailResult.success) {
@@ -44,7 +44,7 @@ export const register: Middleware = async ctx => {
   ctx.body = createdUser;
 };
 
-// 로그인
+// # 로그인
 export const login: Middleware = async ctx => {
   interface RequestBody {
     email: string;
@@ -65,7 +65,7 @@ export const login: Middleware = async ctx => {
   ctx.body = result.data;
 };
 
-// 리프레쉬
+// # 리프레쉬
 export const refresh: Middleware = async ctx => {
   const { refreshToken }: { refreshToken: string } = ctx.request.body;
 
@@ -87,12 +87,12 @@ export const refresh: Middleware = async ctx => {
   }
 };
 
-// 이메일 인증
+// # 이메일 인증
 export const emailConfirmation: Middleware = async ctx => {
-  const { emailAuthToken }: { emailAuthToken: string } = ctx.params;
+  const { token: emailAuthToken }: { token: string } = ctx.request.body;
 
   const schema = generateSchema({ emailAuthToken });
-  if (!validateSchema(ctx, schema, 'params')) {
+  if (!validateSchema(ctx, schema)) {
     throw new BadRequest({ message: ' shcema 오류', error: ctx.state.error });
   }
 
@@ -110,8 +110,24 @@ export const emailConfirmation: Middleware = async ctx => {
   ctx.status = StatusCodes.OK;
   ctx.body = 'User Confirmed!!';
 };
+// # 중복 확인
+export const duplicateCheck: Middleware = async ctx => {
+  const data: { email?: string; username?: string } = ctx.request.query;
+  console.log(data);
+  const schema = generateSchema(data);
+  if (!validateSchema(ctx, schema, 'query')) {
+    throw new BadRequest({ message: ' shcema 오류', error: ctx.state.error });
+  }
+  const authService = new AuthService();
+  const result = await authService.findUsersByOptions({ where: { ...data } });
+  if (result.success) {
+    throw new Conflict({ message: '존재하는 사용자입니다.', error: { query: data } });
+  }
+  ctx.status = StatusCodes.OK;
+  ctx.body = { mesage: `사용 가능한 ${Object.keys(data).join(', ')} 입니다.` };
+};
 
-// 테스트
+// # 테스트
 export const test: Middleware = async ctx => {
   if (!ctx.state.user) {
     ctx.status = StatusCodes.NOT_FOUND;
@@ -121,25 +137,3 @@ export const test: Middleware = async ctx => {
   ctx.status = StatusCodes.OK;
   ctx.body = ctx.state.user;
 };
-
-// export const check: Middleware = async (ctx) => {
-//   const { user } = ctx.state;
-//   if (!user) throw new Unauthorized({ message: '로그인 중이 아닙니다.' });
-//   ctx.status = StatusCodes.OK;
-//   ctx.body = user;
-// };
-
-// export const emailVerification: Middleware = async (ctx) => {
-//   const schema = Joi.object().keys({ email: validation.email });
-//   if (!validateJoi(ctx, schema, 'params')) {
-//     throw new BadRequest({ message: ' shcema 오류', log: ctx.state.error });
-//   }
-
-//   const { email }: { email: string } = ctx.params;
-
-//   const result = await AuthService.findOneEmail(email);
-//   if (result) throw new Conflict({ message: '이미 사용 중인 이메일입니다.' });
-
-//   ctx.status = StatusCodes.OK;
-//   ctx.body = { message: '사용 가능한 이메일입니다.' };
-// };
