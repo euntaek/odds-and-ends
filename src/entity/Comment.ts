@@ -13,7 +13,7 @@ import {
 import Post from './Post';
 import User from './User';
 
-@Entity()
+@Entity('comment')
 export default class Comment {
   @PrimaryGeneratedColumn()
   id!: number;
@@ -31,10 +31,10 @@ export default class Comment {
   @Column({ type: 'smallint', default: 0 })
   reply_count!: number;
 
-  @CreateDateColumn()
+  @CreateDateColumn({ type: 'timestamptz' })
   created_at!: Date;
 
-  @UpdateDateColumn()
+  @UpdateDateColumn({ type: 'timestamptz' })
   updated_at!: Date;
 
   @DeleteDateColumn({ nullable: true, default: null })

@@ -5,13 +5,15 @@ import {
   Generated,
   CreateDateColumn,
   UpdateDateColumn,
-  Index,
   ManyToMany,
+  ManyToOne,
+  JoinColumn,
 } from 'typeorm';
 import Post from './Post';
+import Tag from './Tag';
 
-@Entity('tag')
-export default class Tag {
+@Entity('tag_alias')
+export default class TagAlias {
   @PrimaryGeneratedColumn()
   id: number;
 
@@ -28,6 +30,13 @@ export default class Tag {
   @UpdateDateColumn({ type: 'timestamptz' })
   updated_at!: Date;
 
-  @ManyToMany(type => Post, post => post.tags)
+  @ManyToMany(type => Post, post => post.tag_aliases)
   posts!: Post[];
+
+  @Column('uuid')
+  tag_id!: string;
+
+  @ManyToOne(type => Tag)
+  @JoinColumn({ referencedColumnName: '_id' })
+  tag!: Tag;
 }

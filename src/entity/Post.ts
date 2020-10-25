@@ -1,24 +1,27 @@
 import {
+  BaseEntity,
   Entity,
   PrimaryGeneratedColumn,
   Column,
   Generated,
   CreateDateColumn,
   UpdateDateColumn,
-  DeleteDateColumn,
   OneToMany,
   ManyToOne,
   ManyToMany,
   JoinColumn,
   JoinTable,
+  FindManyOptions,
 } from 'typeorm';
 
 import User from './User';
-import Tag from './Tag';
 import Comment from './Comment';
+import PostImage from './PostImage';
+import Tag from './Tag';
+import TagAlias from './TagAlias';
 
-@Entity()
-export default class Post {
+@Entity('post')
+export default class Post extends BaseEntity {
   @PrimaryGeneratedColumn()
   id!: number;
 
@@ -27,31 +30,46 @@ export default class Post {
   _id!: string;
 
   @Column({ type: 'varchar', length: 255 })
-  body!: string;
+  content!: string;
 
-  @CreateDateColumn()
+  @CreateDateColumn({ type: 'timestamptz' })
   created_at!: Date;
 
-  @UpdateDateColumn()
+  @UpdateDateColumn({ type: 'timestamptz' })
   updated_at!: Date;
 
-  @DeleteDateColumn({ nullable: true, default: null })
-  deleted_at!: Date | null;
+  @Column('uuid')
+  user_id!: string;
 
-  @ManyToOne((type) => User, { eager: true, onDelete: 'CASCADE' })
+  @ManyToOne(type => User, { onDelete: 'CASCADE' })
   @JoinColumn({ referencedColumnName: '_id' })
   user!: User;
 
-  @OneToMany((type) => Comment, (comment) => comment.posts)
+  @OneToMany(type => PostImage, postImage => postImage.post)
+  images!: PostImage[];
+
+  @OneToMany(type => Comment, comment => comment.posts)
   comments!: string;
-  // @OneToMany(type=> )
-  @ManyToMany(() => Tag)
+
+  @ManyToMany(() => TagAlias, tagAlias => tagAlias.posts)
+  @JoinTable({
+    name: 'post_and_tag_alias',
+    joinColumn: { referencedColumnName: '_id' },
+    inverseJoinColumn: { referencedColumnName: '_id' },
+  })
+  tag_aliases!: TagAlias[];
+
+  @ManyToMany(() => Tag, tag => tag.posts)
   @JoinTable({
     name: 'post_and_tag',
     joinColumn: { referencedColumnName: '_id' },
     inverseJoinColumn: { referencedColumnName: '_id' },
   })
   tags!: Tag[];
+
+  static async findAllByOptions(): Promise<Post[]> {
+    return await this.find({ where: { id: 123 } });
+  }
 }
 
 // static async getAll(skip: number, take: number): Promise<[Post[], number]> {
