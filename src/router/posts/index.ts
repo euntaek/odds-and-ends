@@ -1,14 +1,17 @@
 import Router from '@koa/router';
 
-import { write, list, read, remove, removeMany, update } from './controller';
+import { write, list, read, remove, update, uploadImages } from './controller';
+import { checkLoggedIn, upload } from '../../middlewares';
 
 const posts = new Router();
 
 posts.get('/', list);
-posts.post('/', write);
-posts.delete('/', removeMany);
+posts.post('/', checkLoggedIn, write);
+
 posts.get('/:id', read);
-posts.delete('/:id', remove);
-posts.patch('/:id', update);
+posts.delete('/:id', checkLoggedIn, remove);
+posts.patch('/:id', checkLoggedIn, update);
+
+posts.post('/images', checkLoggedIn, upload('images'), uploadImages);
 
 export default posts;
