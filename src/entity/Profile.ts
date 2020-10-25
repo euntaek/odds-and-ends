@@ -24,6 +24,9 @@ export default class Profile extends BaseEntity {
   @Column({ type: 'varchar', length: 255 })
   display_name: string;
 
+  @Column({ type: 'varchar', length: 255, nullable: true })
+  about!: string;
+
   @Column({ type: 'varchar', default: 'thumbnail:url' })
   thumbnail: string;
 
