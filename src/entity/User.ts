@@ -72,11 +72,12 @@ export default class User extends BaseEntity {
       profile: {
         _id: this.profile._id,
         display_name: this.profile.display_name,
+        about: this.profile.about,
         thumbnail: this.profile.thumbnail,
       },
     };
   }
-  // instance methods
+  // # instance methods
   async checkPassword(password: string): Promise<boolean> {
     return await bcrypt.compare(password, this.hashed_password);
   }
@@ -95,10 +96,11 @@ export default class User extends BaseEntity {
     }
   }
 
-  // static methods
+  // # static methods
   static async createOne(userForm: DeepPartial<User>): Promise<User> {
     return this.create(userForm);
   }
+
   static async findOneByUUID(uuid: string): Promise<User | undefined> {
     return await this.findOne({ where: { _id: uuid } });
   }
@@ -114,38 +116,3 @@ export default class User extends BaseEntity {
     return result.affected === 1 ? true : false;
   }
 }
-
-// async generateUserToken(): Promise<string> {
-//   try {
-//     return await generateJWT(
-//       {
-//         _id: this._id.toString(),
-//         email: this.email,
-//         isCertified: this.is_certified,
-//       },
-//       { expiresIn: '7d' },
-//     );
-//   } catch (error) {
-//     throw new InternalServerError({
-//       message: '토큰 생성 실패',
-//       location: 'UserModel.generateUserToken',
-//       log: error,
-//     });
-//   }
-
-// static async createOne(user: DeepPartial<User>): Promise<UserInfo> {
-//   try {
-//     const createdUser = await this.create({ ...user, isCertified: false }).save();
-//     return { email: createdUser.email, displayName: createdUser.displayName };
-//   } catch (error) {
-//     throw new InternalServerError({ location: 'UserModel.createOne', log: error });
-//   }
-// }
-// static async getOneByOptions(options: ObjectLiteral): Promise<User | undefined> {
-//   console.log(options);
-//   try {
-//     return await this.findOne({ where: options });
-//   } catch (error) {
-//     throw new InternalServerError({ location: 'UserModel.getOnByEmail', log: error });
-//   }
-// }

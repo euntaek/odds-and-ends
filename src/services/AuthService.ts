@@ -23,10 +23,10 @@ class AuthService {
     try {
       const { email, password } = loginForm;
 
-      // 계정 확인
+      // 사용자 확인
       const user = await User.findOneByEmail(email);
 
-      // 계정 존재 유무와 비밀번호 확인
+      // 사용자 존재 유무와 비밀번호 확인
       if (!user || !(await user.checkPassword(password))) {
         return failureData('이메일 또는 비밀번호를 잘못 입력하셨습니다.');
       }
@@ -45,11 +45,12 @@ class AuthService {
     password: string;
     username: string;
     displayName: string;
+    about: string;
     thumbnail?: string;
   }): Promise<ServiceData<UserInfo>> {
-    const { email, password, username, displayName: display_name, thumbnail } = registerForm;
+    const { email, password, username, displayName: display_name, about, thumbnail } = registerForm;
 
-    //계정 유무 확인
+    // 사용자 유무 확인
     const exists = await User.findOneByEmail(email);
     if (exists) return failureData('존재하는 사용자입니다.');
 
@@ -57,10 +58,10 @@ class AuthService {
     const user = await getManager().transaction(async transactionalEntityManager => {
       try {
         // profile 생성
-        const profile = await Profile.createOne({ display_name, thumbnail });
+        const profile = await Profile.createOne({ display_name, about, thumbnail });
         await transactionalEntityManager.save(profile);
 
-        // user 생성
+        // 사용자 생성
         const hashed_password = await hashPssword(password);
         const user = await User.createOne({ email, hashed_password, username, profile });
         await transactionalEntityManager.save(user);
@@ -110,7 +111,6 @@ class AuthService {
       const diffTime = new Date().getTime() - new Date(emailAuth.created_at).getTime();
       const expired = diffTime > 1000 * 60 * 60 * 24;
       if (expired || emailAuth.confirmed_at) return failureData('만료 된 링크입니다.');
-      console.log(diffTime, expired);
 
       //인증 완료
       const isUpdated = EmailAuthentication.upadteOne(emailAuth.id, { confirmed_at: new Date() });
@@ -127,10 +127,10 @@ class AuthService {
     }
   }
 
-  // # 유저 인증
+  // # 사용자 인증
   async userConfirmation(emailAuth: DeepPartial<EmailAuthentication>): Promise<ServiceData> {
     try {
-      // 계정 이메일, uuid 확인
+      // 사용자 이메일, uuid 확인
       const user = await User.findOneByOptions({
         where: { _id: emailAuth.user_id, email: emailAuth.email },
       });
@@ -151,8 +151,10 @@ class AuthService {
     }
   }
 
+  // # 사용자 찾기
   async findUsersByOptions(options: FindOneOptions<User>): Promise<ServiceData<UserInfo>> {
     const user = await User.findOneByOptions(options);
+
     if (!user) return failureData('존재하지 않는 사용자입니다.');
     return successData(user.serialize());
   }

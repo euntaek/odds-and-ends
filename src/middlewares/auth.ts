@@ -15,7 +15,6 @@ export const hydrateUser: Koa.Middleware = async (ctx, next) => {
     const decoded = jwt.verify(accessToken, ACCESS_TOKEN_SECRET) as any;
     if (typeof decoded === 'string') return next();
     ctx.state.user = (await User.findOneByUUID(decoded._id)) ?? undefined;
-    console.log('decoded: ', decoded);
     return next();
   } catch (error) {
     return next();
