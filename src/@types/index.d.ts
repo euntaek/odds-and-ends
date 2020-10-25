@@ -10,6 +10,7 @@ declare global {
     profile: {
       _id: string;
       display_name: string;
+      about: string;
       thumbnail: string;
     };
   }
