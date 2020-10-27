@@ -18,6 +18,16 @@ const s3 = new AWS.S3({
   region: AWS_REGION,
 });
 
+const s3Storage = multerS3({
+  s3,
+  bucket: AWS_S3_BUCKET_NAME,
+  key: (req, file, done) => {
+    const ext = path.extname(file.originalname);
+    const imageName = path.basename(file.originalname, ext);
+    done(null, `${imageName}.${Date.now()}${ext}`);
+  },
+});
+
 const storage = multer.diskStorage({
   destination(req, file, done) {
     done(null, 'src/public/images');
@@ -31,4 +41,6 @@ const storage = multer.diskStorage({
 
 const limits = { fileSize: 4 * 1024 * 1024 }; // 4MB
 
-export const multerInstance = multer({ storage, limits });
+// Error: StorageEngine' is not assignable to type
+// node_modules/@types/multer 삭제를 하거나 multer를 사용 안하면 됨.
+export const multerInstance = multer({ storage: s3Storage, limits });
