@@ -4,9 +4,9 @@ import jwt from 'jsonwebtoken';
 
 import AuthService from '../../services/AuthService';
 
-import { BadRequest, Conflict, NotFound, Unauthorized } from '../../errors/errRequest';
-import { generateSchema, validateSchema } from '../../utils/reqValidation';
 import { REFRESH_TOKEN_SECRET } from '../../constans';
+import { generateSchema, validateSchema } from '../../utils/reqValidation';
+import { BadRequest, Conflict, NotFound, Unauthorized } from '../../errors/errRequest';
 
 // # 회원가입
 export const register: Middleware = async ctx => {
@@ -15,6 +15,7 @@ export const register: Middleware = async ctx => {
     password: string;
     username: string;
     displayName: string;
+    about: string;
     thumbnail: string;
   }
   const userForm: RequestBody = ctx.request.body;
@@ -34,11 +35,11 @@ export const register: Middleware = async ctx => {
   const createdUser = registerResult.data as UserInfo;
 
   // 회원가입 인증 이메일 전송
-  const sendMailResult = await authService.sendMail('register', createdUser);
+  // const sendMailResult = await authService.sendMail('register', createdUser);
 
-  if (!sendMailResult.success) {
-    throw new BadRequest({ message: '회원가입 인증 메일 전송 실패', error: sendMailResult.error });
-  }
+  // if (!sendMailResult.success) {
+  //   throw new BadRequest({ message: '회원가입 인증 메일 전송 실패', error: sendMailResult.error });
+  // }
 
   ctx.status = StatusCodes.OK;
   ctx.body = createdUser;
@@ -89,7 +90,7 @@ export const refresh: Middleware = async ctx => {
 
 // # 이메일 인증
 export const emailConfirmation: Middleware = async ctx => {
-  const { token: emailAuthToken }: { token: string } = ctx.request.body;
+  const { emailAuthToken }: { emailAuthToken: string } = ctx.request.body;
 
   const schema = generateSchema({ emailAuthToken });
   if (!validateSchema(ctx, schema)) {

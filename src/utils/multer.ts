@@ -10,6 +10,8 @@ import {
   AWS_S3_BUCKET_NAME,
 } from '../constans';
 
+const BUKET_PATH = 'temp';
+
 const s3 = new AWS.S3({
   credentials: {
     accessKeyId: AWS_ACCESS_KEY_ID,
@@ -23,19 +25,9 @@ const s3Storage = multerS3({
   bucket: AWS_S3_BUCKET_NAME,
   key: (req, file, done) => {
     const ext = path.extname(file.originalname);
-    const imageName = path.basename(file.originalname, ext);
-    done(null, `${imageName}.${Date.now()}${ext}`);
-  },
-});
-
-const storage = multer.diskStorage({
-  destination(req, file, done) {
-    done(null, 'src/public/images');
-  },
-  filename(req, file, done) {
-    const ext = path.extname(file.originalname);
-    const imageName = path.basename(file.originalname, ext);
-    done(null, `${imageName}.${Date.now()}${ext}`);
+    const originalImgName = path.basename(file.originalname, ext);
+    const refinedImgName = `${originalImgName}.${Date.now()}${ext}`;
+    done(null, `${BUKET_PATH}/${refinedImgName}`);
   },
 });
 
