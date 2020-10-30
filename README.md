@@ -12,7 +12,7 @@
 - Typescript
 - Koa
 - Postgresql
-- Redis
+- Redis - 사용 예정
 - TypeORM
 - AWS
   - S3
