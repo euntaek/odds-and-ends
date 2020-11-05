@@ -28,11 +28,11 @@ export const register: Middleware = async ctx => {
   const authService = new AuthService();
   const registerResult = await authService.register(userForm);
 
-  if (!registerResult.success) {
+  if (!registerResult.success || !registerResult.data) {
     throw new Conflict(registerResult.error);
   }
 
-  const createdUser = registerResult.data as UserInfo;
+  const createdUser = registerResult.data;
 
   // 회원가입 인증 이메일 전송
   // const sendMailResult = await authService.sendMail('register', createdUser);
@@ -66,6 +66,33 @@ export const login: Middleware = async ctx => {
   ctx.body = result.data;
 };
 
+// # 프로필 수정
+export const editProfile: Middleware = async ctx => {
+  interface RequestBody {
+    displayName?: string;
+    about?: string;
+    thumbnail?: string;
+  }
+  const profileForm: RequestBody = ctx.request.body;
+
+  const schema = generateSchema(profileForm);
+  if (!validateSchema(ctx, schema)) {
+    throw new BadRequest({ message: 'shcema 오류', error: ctx.state.error });
+  }
+
+  const authService = new AuthService();
+  const pfofileEditResult = await authService.editPforile(ctx.state.user.profile._id, profileForm);
+  if (!pfofileEditResult.success) {
+    throw new BadRequest(pfofileEditResult.error);
+  }
+  const userResult = await authService.findUsersByOptions(ctx.state.user.id);
+  if (!userResult.success) {
+    throw new BadRequest(userResult.error);
+  }
+  ctx.status = StatusCodes.OK;
+  ctx.body = userResult.data;
+};
+
 // # 리프레쉬
 export const refresh: Middleware = async ctx => {
   const { refreshToken }: { refreshToken: string } = ctx.request.body;
@@ -75,17 +102,13 @@ export const refresh: Middleware = async ctx => {
     throw new BadRequest({ message: 'shcema 오류', error: ctx.state.error });
   }
 
-  try {
-    const { _id }: { _id: string } = jwt.verify(refreshToken, REFRESH_TOKEN_SECRET) as any;
-    const authService = new AuthService();
-    const result = await authService.refresh(_id);
-    if (!result.success) throw new Unauthorized(result.error);
+  const { _id: userId }: { _id: string } = jwt.verify(refreshToken, REFRESH_TOKEN_SECRET) as any;
+  const authService = new AuthService();
+  const result = await authService.refresh(userId);
+  if (!result.success) throw new Unauthorized(result.error);
 
-    ctx.status = StatusCodes.OK;
-    ctx.body = result.data;
-  } catch (error) {
-    throw new Unauthorized({ message: '리프레쉬 실패', error });
-  }
+  ctx.status = StatusCodes.OK;
+  ctx.body = result.data;
 };
 
 // # 이메일 인증
@@ -111,6 +134,7 @@ export const emailConfirmation: Middleware = async ctx => {
   ctx.status = StatusCodes.OK;
   ctx.body = 'User Confirmed!!';
 };
+
 // # 중복 확인
 export const duplicateCheck: Middleware = async ctx => {
   const data: { email?: string; username?: string } = ctx.request.query;

@@ -43,4 +43,9 @@ export default class Profile extends BaseEntity {
   static async createOne(profile: DeepPartial<Profile>): Promise<Profile> {
     return this.create(profile);
   }
+
+  static async upadteOne(id: number | string, body: DeepPartial<Profile>): Promise<boolean> {
+    const result = await this.update(typeof id === 'number' ? id : { _id: id }, body);
+    return result.affected === 1 ? true : false;
+  }
 }

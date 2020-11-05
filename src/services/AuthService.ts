@@ -3,6 +3,7 @@ import { DeepPartial, FindOneOptions, getManager } from 'typeorm';
 import User from '../entity/User';
 import Profile from '../entity/Profile';
 import EmailAuthentication from '../entity/EmailAuthentication';
+
 import { hashPssword, generateRandomToken } from '../utils/auth';
 import { InternalServerError } from '../errors/errRequest';
 import { createEmailTemplate } from '../etc/emailTemplates';
@@ -18,27 +19,6 @@ function failureData(error: ErrorParams | string) {
 }
 
 class AuthService {
-  // # 로그인
-  async login(loginForm: { email: string; password: string }): Promise<ServiceData<LoginData>> {
-    try {
-      const { email, password } = loginForm;
-
-      // 사용자 확인
-      const user = await User.findOneByEmail(email);
-
-      // 사용자 존재 유무와 비밀번호 확인
-      if (!user || !(await user.checkPassword(password))) {
-        return failureData('이메일 또는 비밀번호를 잘못 입력하셨습니다.');
-      }
-
-      // access token, refresh token 발급
-      const token = await user.generateUserToken();
-      return successData({ user, ...token });
-    } catch (error) {
-      throw new InternalServerError({ message: '로그인 실패', error });
-    }
-  }
-
   // # 화원가입
   async register(registerForm: {
     email: string;
@@ -47,7 +27,7 @@ class AuthService {
     displayName: string;
     about: string;
     thumbnail?: string;
-  }): Promise<ServiceData<UserInfo>> {
+  }): Promise<ServiceData<User>> {
     const { email, password, username, displayName: display_name, about, thumbnail } = registerForm;
 
     // 사용자 유무 확인
@@ -71,19 +51,63 @@ class AuthService {
         throw new InternalServerError({ message: '회원가입 실패', error });
       }
     });
-    return successData(user.serialize());
+    return successData(user);
+  }
+
+  // # 로그인
+  async login(loginForm: { email: string; password: string }): Promise<ServiceData<LoginData>> {
+    try {
+      const { email, password } = loginForm;
+
+      // 사용자 확인
+      const user = await User.findOneByEmail(email);
+
+      // 사용자 존재 유무와 비밀번호 확인
+      if (!user || !(await user.checkPassword(password))) {
+        return failureData('이메일 또는 비밀번호를 잘못 입력하셨습니다.');
+      }
+
+      // access token, refresh token 발급
+      const token = await user.generateUserToken();
+      return successData({ user, ...token });
+    } catch (error) {
+      throw new InternalServerError({ message: '로그인 실패', error });
+    }
+  }
+
+  // # 프로필 수정
+  async editPforile(
+    profileId: string,
+    profileForm: { displayName?: string; about?: string; thumbnail?: string },
+  ): Promise<ServiceData> {
+    try {
+      const { displayName: display_name, about, thumbnail } = profileForm;
+      console.log('--------------update before--------------');
+      const isEdited = await Profile.upadteOne(profileId, { display_name, about, thumbnail });
+      console.log('--------------update after--------------');
+      if (!isEdited) {
+        return failureData({ message: '프로필 수정 실패', error: 'isEdited is false' });
+      }
+      return successData();
+    } catch (error) {
+      throw new InternalServerError({ message: '프로필 수정 실패', error });
+    }
   }
 
   // # 새로고침
-  async refresh(_id: string): Promise<ServiceData<UserToken>> {
-    const user = await User.findOneByUUID(_id);
-    if (!user) return failureData({ message: '리프레쉬 실패', error: '사용자가 존재 하지 않음' });
-    const token = await user.generateUserToken();
-    return successData(token);
+  async refresh(userId: string): Promise<ServiceData<UserToken>> {
+    try {
+      const user = await User.findOneByUUID(userId);
+      if (!user) return failureData({ message: '리프레쉬 실패', error: 'User not found' });
+      const token = await user.generateUserToken();
+      return successData(token);
+    } catch (error) {
+      throw new InternalServerError({ message: '리프레쉬 실패', error });
+    }
   }
 
   // # 이메일 전송
-  async sendMail(type: 'register' | 'resetPassword', user: UserInfo): Promise<ServiceData> {
+  async sendMail(type: 'register' | 'resetPassword', user: User): Promise<ServiceData> {
     try {
       const { _id: user_id, email } = user;
       const token = generateRandomToken();
@@ -153,10 +177,14 @@ class AuthService {
 
   // # 사용자 찾기
   async findUsersByOptions(options: FindOneOptions<User>): Promise<ServiceData<UserInfo>> {
-    const user = await User.findOneByOptions(options);
+    try {
+      const user = await User.findOneByOptions(options);
 
-    if (!user) return failureData('존재하지 않는 사용자입니다.');
-    return successData(user.serialize());
+      if (!user) return failureData('존재하지 않는 사용자입니다.');
+      return successData(user.serialize());
+    } catch (error) {
+      throw new InternalServerError({ message: '사용자 찾기 실패', error });
+    }
   }
 }
 

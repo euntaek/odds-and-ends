@@ -1,6 +1,8 @@
+import User from '../entity/User';
+
 export const createEmailTemplate = (
   type: 'register' | 'resetPassword',
-  user: UserInfo,
+  user: User,
   token: string,
 ): { subject: string; html: string } => {
   switch (type) {
