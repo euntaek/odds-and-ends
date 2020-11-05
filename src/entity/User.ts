@@ -42,7 +42,7 @@ export default class User extends BaseEntity {
   @Column({ unique: true, type: 'varchar', length: 255 })
   username!: string;
 
-  @Column()
+  @Column({ select: false })
   hashed_password!: string;
 
   @Column({ default: false, type: 'boolean' })
@@ -68,18 +68,23 @@ export default class User extends BaseEntity {
       _id: this._id,
       email: this.email,
       username: this.username,
-      is_confirmed: this.is_confirmed,
       profile: {
         _id: this.profile._id,
         display_name: this.profile.display_name,
-        about: this.profile.about,
         thumbnail: this.profile.thumbnail,
       },
     };
   }
   // # instance methods
   async checkPassword(password: string): Promise<boolean> {
-    return await bcrypt.compare(password, this.hashed_password);
+    const _ID = this._id;
+
+    const { user_hashed_password } = await User.createQueryBuilder('user')
+      .select('user.hashed_password')
+      .where('user._id = :_ID', { _ID })
+      .getRawOne();
+
+    return await bcrypt.compare(password, user_hashed_password);
   }
 
   async generateUserToken(): Promise<UserToken> {
@@ -102,17 +107,23 @@ export default class User extends BaseEntity {
   }
 
   static async findOneByUUID(uuid: string): Promise<User | undefined> {
-    return await this.findOne({ where: { _id: uuid } });
+    return await this.createQueryBuilder('user')
+      .leftJoinAndSelect('user.profile', 'profile')
+      .where('user._id = :uuid', { uuid })
+      .getOne();
   }
   static async findOneByEmail(email: string): Promise<User | undefined> {
-    return await this.findOne({ where: { email } });
+    return await this.createQueryBuilder('user')
+      .leftJoinAndSelect('user.profile', 'profile')
+      .where('user.email = :email', { email })
+      .getOne();
   }
 
   static async findOneByOptions(options: FindOneOptions<User>): Promise<User | undefined> {
     return await this.findOne(options);
   }
   static async upadteOne(id: number | string, body: DeepPartial<User>): Promise<boolean> {
-    const result = await this.update(typeof id === 'number' ? id : { _id: id }, body);
+    const result = await this.update(typeof id == 'number' ? id : { _id: id }, body);
     return result.affected === 1 ? true : false;
   }
 }
