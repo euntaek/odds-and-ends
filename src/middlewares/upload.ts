@@ -1,9 +1,16 @@
 import { Middleware } from '@koa/router';
+import multer from '@koa/multer';
 
-import { multerInstance } from '../utils/multer';
+import { s3Storage } from '../utils/s3';
 
-export function upload(filename: string): Middleware {
+const limits = { fileSize: 4 * 1024 * 1024 }; // 4MB
+
+export function upload(fieldName: string): Middleware {
   return async (ctx, next) => {
-    await multerInstance.array(filename)(ctx as any, next);
+    const { username } = ctx.state.user;
+    await multer({ storage: s3Storage(fieldName, username) as any, limits }).array(fieldName)(
+      ctx as any,
+      next,
+    );
   };
 }
