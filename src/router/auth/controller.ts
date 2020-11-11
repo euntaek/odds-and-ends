@@ -29,7 +29,7 @@ export const register: Middleware = async ctx => {
   const registerResult = await authService.register(userForm);
 
   if (!registerResult.success || !registerResult.data) {
-    throw new Conflict(registerResult.error);
+    throw new Conflict('회원가입 실패');
   }
 
   const createdUser = registerResult.data;
@@ -154,11 +154,10 @@ export const duplicateCheck: Middleware = async ctx => {
 
 // # 테스트
 export const test: Middleware = async ctx => {
-  if (!ctx.state.user) {
-    ctx.status = StatusCodes.NOT_FOUND;
-    return;
-  }
+  const authService = new AuthService();
+
+  const user = await authService.test(ctx.state.user._id);
 
   ctx.status = StatusCodes.OK;
-  ctx.body = ctx.state.user;
+  // ctx.body = user;
 };

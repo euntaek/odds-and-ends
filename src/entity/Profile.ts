@@ -40,7 +40,7 @@ export default class Profile extends BaseEntity {
   @JoinColumn({ referencedColumnName: '_id' })
   user!: User;
 
-  static async createOne(profile: DeepPartial<Profile>): Promise<Profile> {
+  static createOne(profile: DeepPartial<Profile>): Profile {
     return this.create(profile);
   }
 

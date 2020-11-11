@@ -33,7 +33,7 @@ export default class EmailAuthentication extends BaseEntity {
   @CreateDateColumn({ type: 'timestamptz' })
   created_at!: Date;
 
-  static async createOne(
+  static async createOneAndSave(
     emailAuthForm: DeepPartial<EmailAuthentication>,
   ): Promise<EmailAuthentication> {
     return await this.create(emailAuthForm).save();

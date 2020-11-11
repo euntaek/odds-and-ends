@@ -102,7 +102,7 @@ export default class User extends BaseEntity {
   }
 
   // # static methods
-  static async createOne(userForm: DeepPartial<User>): Promise<User> {
+  static createOne(userForm: DeepPartial<User>): User {
     return this.create(userForm);
   }
 

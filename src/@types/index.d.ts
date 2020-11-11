@@ -6,11 +6,9 @@ declare global {
     _id: string;
     email: string;
     username: string;
-    is_confirmed: boolean;
     profile: {
       _id: string;
       display_name: string;
-      about: string;
       thumbnail: string;
     };
   }

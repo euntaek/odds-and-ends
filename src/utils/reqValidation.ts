@@ -8,12 +8,12 @@ interface RequestData {
   displayName: string;
   about: string;
   thumbnail: string;
-  accessToken: string;
-  refreshToken: string;
-  emailAuthToken: string;
   content: string;
   tags: string[];
   images: string[];
+  accessToken: string;
+  refreshToken: string;
+  emailAuthToken: string;
 }
 
 const schemaMap = {

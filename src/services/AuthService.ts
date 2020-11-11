@@ -37,16 +37,15 @@ class AuthService {
     // 회원가입 트래잭션 (user, profile)
     const user = await getManager().transaction(async transactionalEntityManager => {
       try {
-        // profile 생성
-        const profile = await Profile.createOne({ display_name, about, thumbnail });
-        await transactionalEntityManager.save(profile);
-
-        // 사용자 생성
+        // 프로필 저장
+        const profile = await transactionalEntityManager.save(
+          Profile.createOne({ display_name, about, thumbnail }),
+        );
+        // 사용자 저장
         const hashed_password = await hashPssword(password);
-        const user = await User.createOne({ email, hashed_password, username, profile });
-        await transactionalEntityManager.save(user);
-
-        return user;
+        return await transactionalEntityManager.save(
+          User.createOne({ email, hashed_password, username, profile }),
+        );
       } catch (error) {
         throw new InternalServerError({ message: '회원가입 실패', error });
       }
@@ -112,7 +111,7 @@ class AuthService {
       const { _id: user_id, email } = user;
       const token = generateRandomToken();
 
-      const emailAuth = await EmailAuthentication.createOne({ type, user_id, email, token });
+      const emailAuth = await EmailAuthentication.createOneAndSave({ type, user_id, email, token });
       const emailTemplate = createEmailTemplate(type, user, emailAuth.token);
       const result = await sendMail({ to: user.email, ...emailTemplate });
       return result;
@@ -184,6 +183,14 @@ class AuthService {
       return successData(user.serialize());
     } catch (error) {
       throw new InternalServerError({ message: '사용자 찾기 실패', error });
+    }
+  }
+  async test(userId: string): Promise<any> {
+    try {
+      const data = await User.findOneByOptions({ where: { _id: userId }, relations: ['posts'] });
+      console.log(data);
+    } catch (error) {
+      throw new InternalServerError({ message: 'auth service test', error });
     }
   }
 }
