@@ -5,13 +5,13 @@ import {
   Generated,
   CreateDateColumn,
   UpdateDateColumn,
-  Index,
   ManyToMany,
+  BaseEntity,
 } from 'typeorm';
 import Post from './Post';
 
 @Entity('tag')
-export default class Tag {
+export default class Tag extends BaseEntity {
   @PrimaryGeneratedColumn()
   id: number;
 
@@ -30,4 +30,12 @@ export default class Tag {
 
   @ManyToMany(type => Post, post => post.tags)
   posts!: Post[];
+
+  static createOne(tag: string): Tag {
+    return this.create({ name: tag });
+  }
+
+  static async findOneByName(name: string): Promise<Tag | undefined> {
+    return await this.createQueryBuilder('tag').where('tag.name = :name', { name }).getOne();
+  }
 }

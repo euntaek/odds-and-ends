@@ -12,13 +12,13 @@ import {
   JoinColumn,
   JoinTable,
   FindManyOptions,
+  DeepPartial,
 } from 'typeorm';
 
 import User from './User';
 import Comment from './Comment';
 import PostImage from './PostImage';
 import Tag from './Tag';
-import TagAlias from './TagAlias';
 
 @Entity('post')
 export default class Post extends BaseEntity {
@@ -51,14 +51,6 @@ export default class Post extends BaseEntity {
   @OneToMany(type => Comment, comment => comment.posts)
   comments!: string;
 
-  @ManyToMany(() => TagAlias, tagAlias => tagAlias.posts)
-  @JoinTable({
-    name: 'post_and_tag_alias',
-    joinColumn: { referencedColumnName: '_id' },
-    inverseJoinColumn: { referencedColumnName: '_id' },
-  })
-  tag_aliases!: TagAlias[];
-
   @ManyToMany(() => Tag, tag => tag.posts)
   @JoinTable({
     name: 'post_and_tag',
@@ -67,8 +59,8 @@ export default class Post extends BaseEntity {
   })
   tags!: Tag[];
 
-  static async findAllByOptions(): Promise<Post[]> {
-    return await this.find({ where: { id: 123 } });
+  static createOne(postForm: DeepPartial<Post>): Post {
+    return this.create(postForm);
   }
 }
 
