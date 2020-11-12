@@ -18,7 +18,7 @@ const s3 = new AWS.S3({
   region: AWS_REGION,
 });
 
-export const s3Storage = (fieldName: string, username: string): StorageEngine =>
+export const s3Storage = (_id: string, fieldName: string): StorageEngine =>
   multerS3({
     s3,
     bucket: AWS_S3_BUCKET_NAME,
@@ -26,6 +26,6 @@ export const s3Storage = (fieldName: string, username: string): StorageEngine =>
       const ext = path.extname(file.originalname);
       const originalImgName = path.basename(file.originalname, ext);
       const refinedImgName = `${originalImgName}.${Date.now()}${ext}`;
-      done(null, `${fieldName}/@${username}/${refinedImgName}`);
+      done(null, `${_id}/images/${fieldName}/${refinedImgName}`);
     },
   });

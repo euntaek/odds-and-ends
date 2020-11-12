@@ -1,3 +1,4 @@
+import { File } from '@koa/multer';
 import { ReturnData } from './return';
 import { ErroInfo } from './error';
 
@@ -21,4 +22,8 @@ declare global {
   }
   interface ServiceData<T = any> extends ReturnData<T> {}
   interface ErrorParams extends ErroInfo {}
+
+  interface S3File extends File {
+    location?: stirng;
+  }
 }

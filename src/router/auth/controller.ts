@@ -71,7 +71,6 @@ export const editProfile: Middleware = async ctx => {
   interface RequestBody {
     displayName?: string;
     about?: string;
-    thumbnail?: string;
   }
   const profileForm: RequestBody = ctx.request.body;
 
@@ -81,7 +80,7 @@ export const editProfile: Middleware = async ctx => {
   }
 
   const authService = new AuthService();
-  const pfofileEditResult = await authService.editPforile(ctx.state.user.profile._id, profileForm);
+  const pfofileEditResult = await authService.editPforile(ctx.state.user, profileForm);
   if (!pfofileEditResult.success) {
     throw new BadRequest(pfofileEditResult.error);
   }
@@ -93,6 +92,15 @@ export const editProfile: Middleware = async ctx => {
   ctx.body = userResult.data;
 };
 
+// thumbnail 업로드
+export const uploadThumbnail: Middleware = async ctx => {
+  const authService = new AuthService();
+  const result = await authService.uploadThumbnail(ctx.state.user, ctx.request.file);
+  if (!result.success) {
+    throw new BadRequest(result.error);
+  }
+  ctx.status = StatusCodes.NO_CONTENT;
+};
 // # 리프레쉬
 export const refresh: Middleware = async ctx => {
   const { refreshToken }: { refreshToken: string } = ctx.request.body;

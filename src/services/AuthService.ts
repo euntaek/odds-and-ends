@@ -76,20 +76,32 @@ class AuthService {
 
   // # 프로필 수정
   async editPforile(
-    profileId: string,
+    user: User,
     profileForm: { displayName?: string; about?: string; thumbnail?: string },
   ): Promise<ServiceData> {
     try {
-      const { displayName: display_name, about, thumbnail } = profileForm;
-      console.log('--------------update before--------------');
-      const isEdited = await Profile.upadteOne(profileId, { display_name, about, thumbnail });
-      console.log('--------------update after--------------');
+      const { displayName: display_name, about } = profileForm;
+      const isEdited = await Profile.upadteOne(user.profile.id, { display_name, about });
       if (!isEdited) {
         return failureData({ message: '프로필 수정 실패', error: 'isEdited is false' });
       }
       return successData();
     } catch (error) {
       throw new InternalServerError({ message: '프로필 수정 실패', error });
+    }
+  }
+
+  // # 프로필 이미지 업로드
+  async uploadThumbnail(user: User, file: S3File): Promise<ServiceData<boolean>> {
+    try {
+      const thumbnail = file.location;
+      const isUpload = await Profile.upadteOne(user.profile.id, { thumbnail });
+      if (!isUpload) {
+        return failureData({ message: '프로필 수정 실패', error: 'isUpload is false' });
+      }
+      return successData();
+    } catch (error) {
+      throw new InternalServerError({ message: '프로필 이미지 업로드 실패', error });
     }
   }
 
@@ -185,6 +197,8 @@ class AuthService {
       throw new InternalServerError({ message: '사용자 찾기 실패', error });
     }
   }
+
+  // # 테스트
   async test(userId: string): Promise<any> {
     try {
       const data = await User.findOneByOptions({ where: { _id: userId }, relations: ['posts'] });

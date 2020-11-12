@@ -5,10 +5,10 @@ import { s3Storage } from '../utils/s3';
 
 const limits = { fileSize: 4 * 1024 * 1024 }; // 4MB
 
-export function upload(fieldName: string): Middleware {
+export function upload(fieldName: string, type: 'single' | 'array'): Middleware {
   return async (ctx, next) => {
-    const { username } = ctx.state.user;
-    await multer({ storage: s3Storage(fieldName, username) as any, limits }).array(fieldName)(
+    const { _id } = ctx.state.user;
+    await multer({ storage: s3Storage(_id, fieldName) as any, limits })[type](fieldName)(
       ctx as any,
       next,
     );
