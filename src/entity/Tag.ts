@@ -12,23 +12,19 @@ import Post from './Post';
 
 @Entity('tag')
 export default class Tag extends BaseEntity {
-  @PrimaryGeneratedColumn()
-  id: number;
-
-  @Column({ type: 'uuid', unique: true })
-  @Generated('uuid')
-  _id!: string;
+  @PrimaryGeneratedColumn('uuid')
+  id!: string;
 
   @Column({ type: 'varchar', length: '255', unique: true })
   name: string;
 
-  @CreateDateColumn({ type: 'timestamptz' })
-  created_at!: Date;
+  @CreateDateColumn({ type: 'timestamptz', select: false })
+  createdAt!: Date;
 
-  @UpdateDateColumn({ type: 'timestamptz' })
-  updated_at!: Date;
+  @UpdateDateColumn({ type: 'timestamptz', select: false })
+  updatedAt!: Date;
 
-  @ManyToMany(type => Post, post => post.tags)
+  @ManyToMany(type => Post, post => post.tags, { onDelete: 'CASCADE' })
   posts!: Post[];
 
   static createOne(tag: string): Tag {

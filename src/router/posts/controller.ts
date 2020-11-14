@@ -9,8 +9,12 @@ import { BadRequest, NotFound } from '../../errors/errRequest';
 // # 게시물 전체 조회
 export const list: Middleware = async ctx => {
   const postService = new PostService();
-
+  const listResult = await postService.getAllPost();
+  if (!listResult.success) {
+    throw new BadRequest(listResult.error);
+  }
   ctx.status = StatusCodes.OK;
+  ctx.body = listResult.data;
 };
 
 // # 게시물 조회
@@ -33,7 +37,7 @@ export const write: Middleware = async ctx => {
   }
 
   const postService = new PostService();
-  const resultWrite = await postService.write(ctx.state.user._id, writeForm);
+  const resultWrite = await postService.write(ctx.state.user, writeForm);
   if (!resultWrite.success || !resultWrite.data) {
     throw new BadRequest('게시물 작성 실패');
   }
@@ -43,6 +47,15 @@ export const write: Middleware = async ctx => {
 
 // # 게시물 삭제
 export const remove: Middleware = ctx => {
+  const { id }: { id: string } = ctx.params;
+
+  const schema = generateSchema({ id });
+  if (!validateSchema(ctx, schema, 'params')) {
+    throw new BadRequest({ message: 'shcema 오류', error: ctx.state.error });
+  }
+
+  const postService = new PostService();
+
   ctx.status = StatusCodes.OK;
 };
 

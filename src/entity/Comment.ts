@@ -15,36 +15,32 @@ import User from './User';
 
 @Entity('comment')
 export default class Comment {
-  @PrimaryGeneratedColumn()
-  id!: number;
-
-  @Column({ type: 'uuid', unique: true })
-  @Generated('uuid')
-  _id!: string;
+  @PrimaryGeneratedColumn('uuid')
+  id!: string;
 
   @Column({ type: 'varchar', length: 255 })
-  text!: string;
+  content!: string;
 
   @Column({ type: 'uuid', nullable: true, default: null })
-  ref_comment!: string | null;
+  refComment!: string | null;
 
   @Column({ type: 'smallint', default: 0 })
-  reply_count!: number;
+  replyCount!: number;
 
   @CreateDateColumn({ type: 'timestamptz' })
-  created_at!: Date;
+  createdAt!: Date;
 
-  @UpdateDateColumn({ type: 'timestamptz' })
-  updated_at!: Date;
+  @UpdateDateColumn({ type: 'timestamptz', select: false })
+  updatedAt!: Date;
 
-  @DeleteDateColumn({ nullable: true, default: null })
-  deleted_at!: Date | null;
+  @DeleteDateColumn({ nullable: true, default: null, select: false })
+  deletedAt!: Date | null;
 
   @ManyToOne(() => User)
-  @JoinColumn({ referencedColumnName: '_id' })
+  @JoinColumn()
   user!: User;
 
   @ManyToOne(() => Post, { cascade: true })
-  @JoinColumn({ referencedColumnName: '_id' })
+  @JoinColumn()
   posts!: Post[];
 }

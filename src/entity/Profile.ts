@@ -3,7 +3,6 @@ import {
   Entity,
   PrimaryGeneratedColumn,
   Column,
-  Generated,
   CreateDateColumn,
   UpdateDateColumn,
   OneToOne,
@@ -14,15 +13,11 @@ import User from './User';
 
 @Entity('profile')
 export default class Profile extends BaseEntity {
-  @PrimaryGeneratedColumn()
-  id!: number;
-
-  @Column({ type: 'uuid', unique: true })
-  @Generated('uuid')
-  _id!: string;
+  @PrimaryGeneratedColumn('uuid')
+  id!: string;
 
   @Column({ type: 'varchar', length: 255 })
-  display_name: string;
+  displayName: string;
 
   @Column({ type: 'varchar', length: 255, nullable: true })
   about!: string;
@@ -30,14 +25,14 @@ export default class Profile extends BaseEntity {
   @Column({ type: 'varchar', default: 'thumbnail:url' })
   thumbnail: string;
 
-  @CreateDateColumn({ type: 'timestamptz' })
-  created_at!: Date;
+  @CreateDateColumn({ type: 'timestamptz', select: false })
+  createdAt!: Date;
 
-  @UpdateDateColumn({ type: 'timestamptz' })
-  updated_at!: Date;
+  @UpdateDateColumn({ type: 'timestamptz', select: false })
+  updatedAt!: Date;
 
   @OneToOne(() => User, user => user.profile, { onDelete: 'CASCADE' })
-  @JoinColumn({ referencedColumnName: '_id' })
+  @JoinColumn()
   user!: User;
 
   static createOne(profile: DeepPartial<Profile>): Profile {
@@ -45,7 +40,7 @@ export default class Profile extends BaseEntity {
   }
 
   static async upadteOne(id: number | string, body: DeepPartial<Profile>): Promise<boolean> {
-    const result = await this.update(typeof id === 'number' ? id : { _id: id }, body);
+    const result = await this.update(id, body);
     return result.affected === 1 ? true : false;
   }
 }

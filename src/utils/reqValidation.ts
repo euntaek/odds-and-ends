@@ -2,6 +2,7 @@ import { RouterContext } from '@koa/router';
 import Joi, { ObjectSchema, SchemaMap } from 'joi';
 
 interface RequestData {
+  id: string;
   email: string;
   password: string;
   username: string;
@@ -17,6 +18,7 @@ interface RequestData {
 }
 
 const schemaMap = {
+  id: Joi.string().uuid().required(),
   email: Joi.string().email().required(),
   password: Joi.string().min(6).max(24).required(),
   username: Joi.string()

@@ -6,22 +6,23 @@ import {
   ManyToOne,
   JoinColumn,
   BaseEntity,
+  PrimaryColumn,
 } from 'typeorm';
 import Post from './Post';
 
 @Entity('post_image')
 export default class PostImage extends BaseEntity {
-  @PrimaryGeneratedColumn()
-  id!: number;
+  @PrimaryGeneratedColumn('uuid')
+  id!: string;
 
   @Column({ type: 'varchar', length: 255 })
   url!: string;
 
-  @CreateDateColumn({ type: 'timestamptz' })
-  created_at!: Date;
+  @CreateDateColumn({ type: 'timestamptz', select: false })
+  createdAt!: Date;
 
   @ManyToOne(type => Post, post => post.images, { onDelete: 'CASCADE' })
-  @JoinColumn({ referencedColumnName: '_id' })
+  @JoinColumn()
   post!: Post;
 
   static createMany(urls: string[]): PostImage[] {

@@ -14,7 +14,7 @@ export const hydrateUser: Koa.Middleware = async (ctx, next) => {
   try {
     const decoded = jwt.verify(accessToken, ACCESS_TOKEN_SECRET) as any;
     if (typeof decoded === 'string') return next();
-    ctx.state.user = (await User.findOneByUUID(decoded._id)) ?? undefined;
+    ctx.state.user = (await User.findOneById(decoded.id)) ?? undefined;
     return next();
   } catch (error) {
     return next();
@@ -26,7 +26,7 @@ export const checkLoggedIn: Middleware = async (ctx, next) => {
   if (!user) {
     throw new Unauthorized({ message: '로그인이 필요합니다', error: '권한 없는 접근' });
   }
-  if (!user.is_confirmed) {
+  if (!user.isConfirmed) {
     throw new Forbidden({ message: '인증 되지 않은 사용자입니다.', error: '권한 없는 접근' });
   }
   return next();

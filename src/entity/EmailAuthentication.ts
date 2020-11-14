@@ -11,14 +11,14 @@ import {
 
 @Entity('email_authentication')
 export default class EmailAuthentication extends BaseEntity {
-  @PrimaryGeneratedColumn()
-  id!: number;
+  @PrimaryGeneratedColumn('uuid')
+  id!: string;
 
   @Column({ type: 'varchar', length: 255 })
   type!: string;
 
   @Column('uuid')
-  user_id!: string;
+  userId!: string;
 
   @Column({ type: 'varchar', length: 255 })
   email!: string;
@@ -28,10 +28,10 @@ export default class EmailAuthentication extends BaseEntity {
   token!: string;
 
   @Column({ type: 'timestamptz', nullable: true, default: null })
-  confirmed_at: Date;
+  confirmedAt!: Date;
 
   @CreateDateColumn({ type: 'timestamptz' })
-  created_at!: Date;
+  createdAt!: Date;
 
   static async createOneAndSave(
     emailAuthForm: DeepPartial<EmailAuthentication>,
@@ -49,7 +49,7 @@ export default class EmailAuthentication extends BaseEntity {
       .getOne();
   }
 
-  static async upadteOne(id: number, body: DeepPartial<EmailAuthentication>): Promise<boolean> {
+  static async upadteOne(id: string, body: DeepPartial<EmailAuthentication>): Promise<boolean> {
     const result = await this.update(id, body);
     return result.affected === 1 ? true : false;
   }

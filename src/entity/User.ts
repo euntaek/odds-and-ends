@@ -29,12 +29,8 @@ import {
 
 @Entity('user')
 export default class User extends BaseEntity {
-  @PrimaryGeneratedColumn()
-  id!: number;
-
-  @Column({ type: 'uuid', unique: true })
-  @Generated('uuid')
-  _id!: string;
+  @PrimaryGeneratedColumn('uuid')
+  id!: string;
 
   @Column({ unique: true, type: 'varchar', length: 255 })
   email!: string;
@@ -43,16 +39,16 @@ export default class User extends BaseEntity {
   username!: string;
 
   @Column({ select: false })
-  hashed_password!: string;
+  hashedPassword!: string;
 
-  @Column({ default: false, type: 'boolean' })
-  is_confirmed!: boolean;
+  @Column({ type: 'boolean', default: false })
+  isConfirmed!: boolean;
 
-  @CreateDateColumn({ type: 'timestamptz' })
-  created_at!: Date;
+  @CreateDateColumn({ type: 'timestamptz', select: false })
+  createdAt!: Date;
 
-  @UpdateDateColumn({ type: 'timestamptz' })
-  updated_at!: Date;
+  @UpdateDateColumn({ type: 'timestamptz', select: false })
+  updatedAt!: Date;
 
   @OneToOne(type => Profile, profile => profile.user, { eager: true })
   profile!: Profile;
@@ -63,36 +59,36 @@ export default class User extends BaseEntity {
   @OneToMany(type => Comment, comment => comment.user)
   comments!: Comment[];
 
-  serialize(): UserInfo {
-    return {
-      _id: this._id,
-      email: this.email,
-      username: this.username,
-      profile: {
-        _id: this.profile._id,
-        display_name: this.profile.display_name,
-        thumbnail: this.profile.thumbnail,
-      },
-    };
-  }
+  // serialize(): UserInfo {
+  //   return {
+  //     _id: this._id,
+  //     email: this.email,
+  //     username: this.username,
+  //     profile: {
+  //       _id: this.profile._id,
+  //       displayName: this.profile.displayName,
+  //       thumbnail: this.profile.thumbnail,
+  //     },
+  //   };
+  // }
   // # instance methods
   async checkPassword(password: string): Promise<boolean> {
-    const _ID = this._id;
+    const id = this.id;
 
-    const { user_hashed_password } = await User.createQueryBuilder('user')
-      .select('user.hashed_password')
-      .where('user._id = :_ID', { _ID })
-      .getRawOne();
+    const user = await User.createQueryBuilder('user')
+      .select('user.hashedPassword')
+      .where('user.id = :id', { id })
+      .getOne();
 
-    return await bcrypt.compare(password, user_hashed_password);
+    return user ? await bcrypt.compare(password, user.hashedPassword) : false;
   }
 
   async generateUserToken(): Promise<UserToken> {
     try {
-      const accessToken: string = await generateJWT({ _id: this._id }, ACCESS_TOKEN_SECRET, {
+      const accessToken: string = await generateJWT({ id: this.id }, ACCESS_TOKEN_SECRET, {
         expiresIn: ACCESS_TOKEN_EXPIRES_IN,
       });
-      const refreshToken: string = await generateJWT({ _id: this._id }, REFRESH_TOKEN_SECRET, {
+      const refreshToken: string = await generateJWT({ id: this.id }, REFRESH_TOKEN_SECRET, {
         expiresIn: REFRESH_TOKEN_EXPIRES_IN,
       });
       return { accessToken, refreshToken };
@@ -106,10 +102,10 @@ export default class User extends BaseEntity {
     return this.create(userForm);
   }
 
-  static async findOneByUUID(uuid: string): Promise<User | undefined> {
+  static async findOneById(id: string): Promise<User | undefined> {
     return await this.createQueryBuilder('user')
       .leftJoinAndSelect('user.profile', 'profile')
-      .where('user._id = :uuid', { uuid })
+      .where('user.id = :id', { id })
       .getOne();
   }
   static async findOneByEmail(email: string): Promise<User | undefined> {
@@ -123,7 +119,7 @@ export default class User extends BaseEntity {
     return await this.findOne(options);
   }
   static async upadteOne(id: number | string, body: DeepPartial<User>): Promise<boolean> {
-    const result = await this.update(typeof id == 'number' ? id : { _id: id }, body);
+    const result = await this.update(id, body);
     return result.affected === 1 ? true : false;
   }
 }

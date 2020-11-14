@@ -7,7 +7,7 @@ export const createEmailTemplate = (
 ): { subject: string; html: string } => {
   switch (type) {
     case 'register':
-      return confirmationTemplate(user.profile.display_name, token);
+      return confirmationTemplate(user.profile.displayName, token);
     default:
       return { html: '', subject: '' };
   }

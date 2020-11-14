@@ -28,7 +28,7 @@ class AuthService {
     about: string;
     thumbnail?: string;
   }): Promise<ServiceData<User>> {
-    const { email, password, username, displayName: display_name, about, thumbnail } = registerForm;
+    const { email, password, username, displayName, about, thumbnail } = registerForm;
 
     // 사용자 유무 확인
     const exists = await User.findOneByEmail(email);
@@ -39,12 +39,12 @@ class AuthService {
       try {
         // 프로필 저장
         const profile = await transactionalEntityManager.save(
-          Profile.createOne({ display_name, about, thumbnail }),
+          Profile.createOne({ displayName, about, thumbnail }),
         );
         // 사용자 저장
-        const hashed_password = await hashPssword(password);
+        const hashedPassword = await hashPssword(password);
         return await transactionalEntityManager.save(
-          User.createOne({ email, hashed_password, username, profile }),
+          User.createOne({ email, hashedPassword, username, profile }),
         );
       } catch (error) {
         throw new InternalServerError({ message: '회원가입 실패', error });
@@ -80,8 +80,8 @@ class AuthService {
     profileForm: { displayName?: string; about?: string; thumbnail?: string },
   ): Promise<ServiceData> {
     try {
-      const { displayName: display_name, about } = profileForm;
-      const isEdited = await Profile.upadteOne(user.profile.id, { display_name, about });
+      const { displayName: displayName, about } = profileForm;
+      const isEdited = await Profile.upadteOne(user.profile.id, { displayName, about });
       if (!isEdited) {
         return failureData({ message: '프로필 수정 실패', error: 'isEdited is false' });
       }
@@ -108,7 +108,7 @@ class AuthService {
   // # 새로고침
   async refresh(userId: string): Promise<ServiceData<UserToken>> {
     try {
-      const user = await User.findOneByUUID(userId);
+      const user = await User.findOneById(userId);
       if (!user) return failureData({ message: '리프레쉬 실패', error: 'User not found' });
       const token = await user.generateUserToken();
       return successData(token);
@@ -120,10 +120,10 @@ class AuthService {
   // # 이메일 전송
   async sendMail(type: 'register' | 'resetPassword', user: User): Promise<ServiceData> {
     try {
-      const { _id: user_id, email } = user;
+      const { id: userId, email } = user;
       const token = generateRandomToken();
 
-      const emailAuth = await EmailAuthentication.createOneAndSave({ type, user_id, email, token });
+      const emailAuth = await EmailAuthentication.createOneAndSave({ type, userId, email, token });
       const emailTemplate = createEmailTemplate(type, user, emailAuth.token);
       const result = await sendMail({ to: user.email, ...emailTemplate });
       return result;
@@ -143,12 +143,12 @@ class AuthService {
       if (!emailAuth) return failureData({ message: '잘못 된 링크입니다.', error: 404 });
 
       // 유효시간, 이미 사용 된 링크인지 확인
-      const diffTime = new Date().getTime() - new Date(emailAuth.created_at).getTime();
+      const diffTime = new Date().getTime() - new Date(emailAuth.createdAt).getTime();
       const expired = diffTime > 1000 * 60 * 60 * 24;
-      if (expired || emailAuth.confirmed_at) return failureData('만료 된 링크입니다.');
+      if (expired || emailAuth.confirmedAt) return failureData('만료 된 링크입니다.');
 
       //인증 완료
-      const isUpdated = EmailAuthentication.upadteOne(emailAuth.id, { confirmed_at: new Date() });
+      const isUpdated = EmailAuthentication.upadteOne(emailAuth.id, { confirmedAt: new Date() });
       if (!isUpdated) {
         throw new InternalServerError({
           message: '이메일 인증 업데이트 실패',
@@ -167,13 +167,13 @@ class AuthService {
     try {
       // 사용자 이메일, uuid 확인
       const user = await User.findOneByOptions({
-        where: { _id: emailAuth.user_id, email: emailAuth.email },
+        where: { id: emailAuth.userId, email: emailAuth.email },
       });
       if (!user) {
         return failureData({ message: '사용자 인증에 실패했습니다.', error: 'User not found' });
       }
       // 인증완료
-      const isConfirmed = await User.upadteOne(user.id, { is_confirmed: true });
+      const isConfirmed = await User.upadteOne(user.id, { isConfirmed: true });
       if (!isConfirmed) {
         throw new InternalServerError({
           message: '사용자 업데이트 실패',
@@ -187,12 +187,12 @@ class AuthService {
   }
 
   // # 사용자 찾기
-  async findUsersByOptions(options: FindOneOptions<User>): Promise<ServiceData<UserInfo>> {
+  async findUsersByOptions(options: FindOneOptions<User>): Promise<ServiceData<User>> {
     try {
       const user = await User.findOneByOptions(options);
 
       if (!user) return failureData('존재하지 않는 사용자입니다.');
-      return successData(user.serialize());
+      return successData(user);
     } catch (error) {
       throw new InternalServerError({ message: '사용자 찾기 실패', error });
     }
@@ -201,7 +201,7 @@ class AuthService {
   // # 테스트
   async test(userId: string): Promise<any> {
     try {
-      const data = await User.findOneByOptions({ where: { _id: userId }, relations: ['posts'] });
+      const data = await User.findOneByOptions({ where: { id: userId }, relations: ['posts'] });
       console.log(data);
     } catch (error) {
       throw new InternalServerError({ message: 'auth service test', error });

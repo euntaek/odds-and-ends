@@ -1,4 +1,5 @@
 import { createConnection, getConnection, ConnectionOptions } from 'typeorm';
+import { SnakeNamingStrategy } from 'typeorm-naming-strategies';
 import 'reflect-metadata';
 import 'pg';
 
@@ -32,6 +33,7 @@ export default {
       entities: [TYPEORM_ENTITIES],
       migrations: [TYPEORM_MIGRATIONS],
       subscribers: [TYPEORM_SUBSCRIBERS],
+      namingStrategy: new SnakeNamingStrategy(),
     };
     try {
       await createConnection(connectionOptions);

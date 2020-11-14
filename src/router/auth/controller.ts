@@ -110,7 +110,7 @@ export const refresh: Middleware = async ctx => {
     throw new BadRequest({ message: 'shcema 오류', error: ctx.state.error });
   }
 
-  const { _id: userId }: { _id: string } = jwt.verify(refreshToken, REFRESH_TOKEN_SECRET) as any;
+  const { id: userId }: { id: string } = jwt.verify(refreshToken, REFRESH_TOKEN_SECRET) as any;
   const authService = new AuthService();
   const result = await authService.refresh(userId);
   if (!result.success) throw new Unauthorized(result.error);
@@ -164,7 +164,7 @@ export const duplicateCheck: Middleware = async ctx => {
 export const test: Middleware = async ctx => {
   const authService = new AuthService();
 
-  const user = await authService.test(ctx.state.user._id);
+  const user = await authService.test(ctx.state.user.id);
 
   ctx.status = StatusCodes.OK;
   // ctx.body = user;

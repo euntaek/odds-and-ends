@@ -3,6 +3,7 @@ import { DeepPartial, getManager } from 'typeorm';
 import Post from '../entity/Post';
 import PostImage from '../entity/PostImage';
 import Tag from '../entity/Tag';
+import User from '../entity/User';
 
 import { InternalServerError } from '../errors/errRequest';
 
@@ -25,11 +26,28 @@ function failureData(error: ErrorParams | string) {
 }
 
 class PostService {
-  // 게시물 작성
+  // # 게시물 전체 조회
+  async getAllPost(): Promise<ServiceData<Post[]>> {
+    try {
+      const posts = await Post.createQueryBuilder('post')
+        .select(['post', 'user', 'profile', 'tags'])
+        .leftJoin('post.user', 'user')
+        .leftJoin('post.tags', 'tags')
+        .leftJoin('user.profile', 'profile')
+        .orderBy({ 'post.created_at': 'DESC' })
+        .getMany();
+      // const posts = await Test.createQueryBuilder('test').getMany();
+      return successData(posts);
+    } catch (error) {
+      return failureData({ message: '게시물 조회 실패', error });
+    }
+  }
+
+  // # 게시물 작성
   async write(
-    userId: string,
+    user: User,
     writeForm: { content: string; tags: string[]; images: string[] },
-  ): Promise<any> {
+  ): Promise<ServiceData<Post>> {
     // 게시물작작성 트래잭션 (post, tag, postImage)
     const post = await getManager().transaction(async transactionalEntityManager => {
       try {
@@ -41,7 +59,7 @@ class PostService {
         );
         // 게시물 저장
         return await transactionalEntityManager.save(
-          Post.createOne({ user_id: userId, content: writeForm.content, tags, images }),
+          Post.createOne({ content: writeForm.content, tags, images, userId: user.id }),
         );
       } catch (error) {
         throw new InternalServerError({ message: '게시물 작성 실패', error });
@@ -50,7 +68,12 @@ class PostService {
     return successData(post);
   }
 
-  // 태그가 존재하는지 찾고 존재하면 가져오고 없으면 새로 생성
+  // # 게시물 삭제
+  async removeOnePost(postId: string): Promise<ServiceData<boolean>> {
+    return successData();
+  }
+
+  // # 태그가 존재하는지 찾고 존재하면 가져오고 없으면 새로 생성
   async createTags(tags: string[]): Promise<Tag[]> {
     const createTag = async (tag: string) => {
       const refinedTag = tag.toLowerCase();
@@ -63,6 +86,7 @@ class PostService {
     return createdTags;
   }
 
+  // # 이미지 주소 생성
   async createPostImages(imagePaths: string[]): Promise<PostImage[]> {
     const createdPostImages = PostImage.createMany(imagePaths);
     return createdPostImages;
@@ -70,51 +94,13 @@ class PostService {
 
   async test() {
     const post = await Post.findOne({
-      where: { _id: 'cedd3e66-4901-4e1a-8c79-d2b1df499ede' },
-      relations: ['tags', 'images'],
+      where: {
+        id: '29ca3e0f-8b95-413a-bd2f-50e5514ade87',
+        userId: 'ae3c79bb-e736-4519-bfb0-273117a5aaae',
+      },
     });
     console.log(post);
+    console.log(await Post.delete('29ca3e0f-8b95-413a-bd2f-50e5514ade87'));
   }
 }
-
-// const PostService: IPostService = {
-//   async getAllPost(page) {
-//     const skip = (page - 1) * 15;
-//     const take = 15;
-//     return await Post.getAll(skip, take);
-//   },
-//   async getOnePost(id) {
-//     return await Post.getOneById(id);
-//   },
-//   async createOnePost(post) {
-//     return await Post.createOne(post);
-//   },
-//   async removeOnePost(id) {
-//     const targetPost = await Post.getOneById(id);
-//     console.log(targetPost);
-//     if (targetPost) {
-//       await Post.removeOne(targetPost);
-//       return true;
-//     }
-//     return false;
-//   },
-//   async removeManyPost(ids) {
-//     const objectIds: ObjectID[] = ids.map((id) => new ObjectID(id));
-//     const targetPosts = await Post.getManyByIds(objectIds);
-//     if (targetPosts?.length === ids.length) {
-//       await Post.removeMany(targetPosts);
-//       return true;
-//     }
-//     return false;
-//   },
-//   async updateOnePost(id, postBody) {
-//     const targetPost = await Post.getOneById(id);
-//     if (targetPost) {
-//       await Post.updateOne(targetPost._id, postBody);
-//       return true;
-//     }
-//     return false;
-//   },
-// };
-
 export default PostService;

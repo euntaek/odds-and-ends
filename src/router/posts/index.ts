@@ -14,6 +14,6 @@ posts.get('/:id', read);
 posts.delete('/:id', checkLoggedIn, remove);
 posts.patch('/:id', checkLoggedIn, update);
 
-posts.post('/images', checkLoggedIn, upload('images'), uploadImages);
+posts.post('/images', checkLoggedIn, upload('post', 'array'), uploadImages);
 
 export default posts;
