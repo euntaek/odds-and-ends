@@ -46,16 +46,19 @@ export const write: Middleware = async ctx => {
 };
 
 // # 게시물 삭제
-export const remove: Middleware = ctx => {
-  const { id }: { id: string } = ctx.params;
+export const remove: Middleware = async ctx => {
+  const { id: postId }: { id: string } = ctx.params;
 
-  const schema = generateSchema({ id });
+  const schema = generateSchema({ id: postId });
   if (!validateSchema(ctx, schema, 'params')) {
     throw new BadRequest({ message: 'shcema 오류', error: ctx.state.error });
   }
 
   const postService = new PostService();
-
+  const removeResult = await postService.removeOnePost(postId, ctx.state.user.id);
+  if (!removeResult.success) {
+    throw new BadRequest(removeResult.error);
+  }
   ctx.status = StatusCodes.OK;
 };
 

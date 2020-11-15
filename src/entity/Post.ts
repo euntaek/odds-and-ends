@@ -35,7 +35,7 @@ export default class Post extends BaseEntity {
   @UpdateDateColumn({ type: 'timestamptz', select: false })
   updatedAt!: Date;
 
-  @Column({ type: 'uuid', select: false })
+  @Column({ type: 'uuid' })
   userId!: string;
 
   @ManyToOne(type => User, { onDelete: 'CASCADE' })
@@ -54,5 +54,11 @@ export default class Post extends BaseEntity {
 
   static createOne(postForm: DeepPartial<Post>): Post {
     return this.create(postForm);
+  }
+  static async findOneById(postId: string): Promise<Post | null> {
+    const post = await this.createQueryBuilder('post')
+      .where('post.id =:postId', { postId })
+      .getOne();
+    return post || null;
   }
 }

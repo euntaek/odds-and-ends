@@ -52,10 +52,12 @@ class PostService {
     const post = await getManager().transaction(async transactionalEntityManager => {
       try {
         // 태그 저장
-        const tags = await transactionalEntityManager.save(await this.createTags(writeForm.tags));
+        const tags = await transactionalEntityManager.save(
+          await this.createManyTag(writeForm.tags),
+        );
         // 게시물 이미지 저장
         const images = await transactionalEntityManager.save(
-          await this.createPostImages(writeForm.images),
+          await this.createManyPostImage(writeForm.images),
         );
         // 게시물 저장
         return await transactionalEntityManager.save(
@@ -69,12 +71,24 @@ class PostService {
   }
 
   // # 게시물 삭제
-  async removeOnePost(postId: string): Promise<ServiceData<boolean>> {
-    return successData();
+  async removeOnePost(postId: string, userId: string): Promise<ServiceData<boolean>> {
+    try {
+      const post = await Post.findOneById(postId);
+      console.log('post: ', post);
+      if (!post || post.userId !== userId)
+        return failureData({
+          message: '게시물 삭제 실패',
+          error: { post, userId, message: '게시물이 없음 or 자신의 게시물이 아님' },
+        });
+      await post.remove();
+      return successData();
+    } catch (error) {
+      throw new InternalServerError({ message: '게시물 삭제 실패', error });
+    }
   }
 
   // # 태그가 존재하는지 찾고 존재하면 가져오고 없으면 새로 생성
-  async createTags(tags: string[]): Promise<Tag[]> {
+  async createManyTag(tags: string[]): Promise<Tag[]> {
     const createTag = async (tag: string) => {
       const refinedTag = tag.toLowerCase();
       const findTag = await Tag.findOneByName(refinedTag);
@@ -87,20 +101,20 @@ class PostService {
   }
 
   // # 이미지 주소 생성
-  async createPostImages(imagePaths: string[]): Promise<PostImage[]> {
+  async createManyPostImage(imagePaths: string[]): Promise<PostImage[]> {
     const createdPostImages = PostImage.createMany(imagePaths);
     return createdPostImages;
   }
 
   async test() {
-    const post = await Post.findOne({
+    const post = await Post.find({
       where: {
-        id: '29ca3e0f-8b95-413a-bd2f-50e5514ade87',
         userId: 'ae3c79bb-e736-4519-bfb0-273117a5aaae',
       },
     });
     console.log(post);
-    console.log(await Post.delete('29ca3e0f-8b95-413a-bd2f-50e5514ade87'));
+    // await Post.remove(post);
+    await Post.delete(post.map(i => i.id));
   }
 }
 export default PostService;
