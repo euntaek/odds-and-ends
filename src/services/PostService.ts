@@ -7,15 +7,6 @@ import User from '../entity/User';
 
 import { InternalServerError } from '../errors/errRequest';
 
-// interface IPostService {
-//   getAllPost(page: number): Promise<[Post[], number]>;
-//   getOnePost(id: string): Promise<Post | undefined>;
-//   createOnePost(post: DeepPartial<Post>): Promise<Post>;
-//   removeOnePost(id: string): Promise<boolean>;
-//   removeManyPost(ids: string[]): Promise<boolean>;
-//   updateOnePost(id: string, postBody: DeepPartial<Post>): Promise<boolean>;
-// }
-
 function successData<T>(data?: T): ServiceData<T> {
   return { success: true, data };
 }
@@ -27,16 +18,9 @@ function failureData(error: ErrorParams | string) {
 
 class PostService {
   // # 게시물 전체 조회
-  async getAllPost(): Promise<ServiceData<Post[]>> {
+  async getAllPost(pId?: number): Promise<ServiceData<Post[]>> {
     try {
-      const posts = await Post.createQueryBuilder('post')
-        .select(['post', 'user', 'profile', 'tags'])
-        .leftJoin('post.user', 'user')
-        .leftJoin('post.tags', 'tags')
-        .leftJoin('user.profile', 'profile')
-        .orderBy({ 'post.created_at': 'DESC' })
-        .getMany();
-      // const posts = await Test.createQueryBuilder('test').getMany();
+      const posts = await Post.getAll(pId, 20);
       return successData(posts);
     } catch (error) {
       return failureData({ message: '게시물 조회 실패', error });
@@ -107,14 +91,8 @@ class PostService {
   }
 
   async test() {
-    const post = await Post.find({
-      where: {
-        userId: 'ae3c79bb-e736-4519-bfb0-273117a5aaae',
-      },
-    });
-    console.log(post);
-    // await Post.remove(post);
-    await Post.delete(post.map(i => i.id));
+    const data = await Post.delete({ id: 'b9141681-8952-4c5e-a2b6-0675095d148b' });
+    return data;
   }
 }
 export default PostService;

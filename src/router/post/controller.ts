@@ -78,4 +78,5 @@ export const test: Middleware = async ctx => {
   const postService = new PostService();
   const data = await postService.test();
   ctx.status = StatusCodes.OK;
+  ctx.body = data;
 };

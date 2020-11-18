@@ -26,6 +26,10 @@ export default class Post extends BaseEntity {
   @PrimaryGeneratedColumn('uuid')
   id!: string;
 
+  @Column({ type: 'int', unique: true })
+  @Generated('increment')
+  pId: number;
+
   @Column({ type: 'varchar', length: 255 })
   content!: string;
 
@@ -35,7 +39,7 @@ export default class Post extends BaseEntity {
   @UpdateDateColumn({ type: 'timestamptz', select: false })
   updatedAt!: Date;
 
-  @Column({ type: 'uuid' })
+  @Column({ type: 'uuid', select: false })
   userId!: string;
 
   @ManyToOne(type => User, { onDelete: 'CASCADE' })
@@ -45,13 +49,27 @@ export default class Post extends BaseEntity {
   @OneToMany(type => PostImage, postImage => postImage.post)
   images!: PostImage[];
 
-  @OneToMany(type => Comment, comment => comment.posts)
-  comments!: string;
+  @OneToMany(type => Comment, comment => comment.post)
+  comments!: Comment[];
 
   @ManyToMany(() => Tag, tag => tag.posts)
   @JoinTable({ name: 'post_and_tag' })
   tags!: Tag[];
 
+  static async getAll(pId: number | null = null, limit = 20): Promise<Post[]> {
+    const qb = this.createQueryBuilder('post')
+      .leftJoin('post.user', 'user')
+      .addSelect(['user.id', 'user.username'])
+      .leftJoin('user.profile', 'profile')
+      .addSelect(['profile.id', 'profile.displayName', 'profile.thumbnail'])
+      .leftJoinAndSelect('post.tags', 'tags')
+      .loadRelationCountAndMap('post.commnetCount', 'post.comments')
+      // .where() 팔로워 팔로잉
+      .orderBy('post.pId', 'DESC')
+      .limit(limit);
+
+    return pId ? await qb.andWhere('post.pId < :pId', { pId: pId }).getMany() : await qb.getMany();
+  }
   static createOne(postForm: DeepPartial<Post>): Post {
     return this.create(postForm);
   }
