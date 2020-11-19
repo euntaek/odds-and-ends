@@ -1,22 +1,6 @@
 import { RouterContext } from '@koa/router';
 import Joi, { ObjectSchema, SchemaMap } from 'joi';
 
-interface RequestData {
-  id: string;
-  email: string;
-  password: string;
-  username: string;
-  displayName: string;
-  about: string;
-  thumbnail: string;
-  content: string;
-  tags: string[];
-  images: string[];
-  accessToken: string;
-  refreshToken: string;
-  emailAuthToken: string;
-}
-
 const schemaMap = {
   id: Joi.string().uuid().required(),
   email: Joi.string().email().required(),
@@ -39,9 +23,12 @@ const schemaMap = {
   content: Joi.string().max(160).required(),
   tags: Joi.array().items(Joi.string()).required(),
   images: Joi.array().items(Joi.string()),
+  tag: Joi.string().max(255),
+  'post-id': Joi.string().uuid().required(),
+  'last-id': Joi.string().uuid().required(),
 };
 
-type GenerateSchema = (schemaKeys: Partial<RequestData>) => ObjectSchema;
+type GenerateSchema = (schemaKeys: { [key in keyof typeof schemaMap]?: any }) => ObjectSchema;
 
 export const generateSchema: GenerateSchema = schemaKeys => {
   const schema: SchemaMap = {};
