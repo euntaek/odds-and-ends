@@ -25,7 +25,8 @@ const schemaMap = {
   images: Joi.array().items(Joi.string()),
   tag: Joi.string().max(255),
   'post-id': Joi.string().uuid().required(),
-  'last-id': Joi.string().uuid().required(),
+  'p-id': Joi.number().required(),
+  'ref-comment': Joi.string().uuid().required(),
 };
 
 type GenerateSchema = (schemaKeys: { [key in keyof typeof schemaMap]?: any }) => ObjectSchema;

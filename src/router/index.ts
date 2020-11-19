@@ -1,14 +1,13 @@
 import Router from '@koa/router';
 
 import auth from './auth';
-import posts from './posts';
-import comments from './comment';
+import post from './post';
+import comment from './comment';
 
 const router = new Router();
 
-posts.use('/:id/comments', comments.routes());
-
 router.use('/auth', auth.routes());
-router.use('/posts', posts.routes());
+router.use('/post', post.routes());
+router.use('/comment', comment.routes());
 
 export default router;
