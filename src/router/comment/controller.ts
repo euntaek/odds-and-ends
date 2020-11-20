@@ -1,19 +1,22 @@
 import { Middleware } from '@koa/router';
 import { StatusCodes } from 'http-status-codes';
 
-import { generateSchema, validateSchema } from '../../utils/reqValidation';
+import { generateSchemaAndValue, validateSchema } from '../../utils/reqValidation';
 import { BadRequest } from '../../errors/errRequest';
 import CommentService from '../../services/CommentService';
 
 export const list: Middleware = async ctx => {
-  const query: { 'post-id': string; 'p-id'?: string; 'ref-comment': string } = ctx.request.query;
+  const {
+    'post-id': postId,
+    'p-id': pId,
+    'ref-comment': refComment,
+  }: { 'post-id': string; 'p-id'?: string; 'ref-comment': string } = ctx.request.query;
 
-  const schema = generateSchema(query);
-  if (!validateSchema(ctx, schema, 'query')) {
+  const schemaAndValue = generateSchemaAndValue({ postId, pId, refComment });
+  if (!validateSchema(ctx, ...schemaAndValue)) {
     throw new BadRequest({ message: ' shcema 오류', error: ctx.state.error });
   }
 
-  const { 'post-id': postId, 'p-id': pId, 'ref-comment': refComment } = query;
   const commentService = new CommentService();
   const listResult = await commentService.list(postId, pId, refComment);
   if (!listResult.success) {
@@ -31,8 +34,8 @@ export const write: Middleware = async ctx => {
   }
   const writeForm: RequestBody = ctx.request.body;
 
-  const schema = generateSchema(writeForm);
-  if (!validateSchema(ctx, schema)) {
+  const schemaAndValue = generateSchemaAndValue(writeForm);
+  if (!validateSchema(ctx, ...schemaAndValue)) {
     throw new BadRequest({ message: 'shcema 오류', error: ctx.state.error });
   }
 

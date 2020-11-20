@@ -3,11 +3,18 @@ import { StatusCodes } from 'http-status-codes';
 
 import PostService from '../../services/PostService';
 
-import { generateSchema, validateSchema } from '../../utils/reqValidation';
-import { BadRequest, NotFound } from '../../errors/errRequest';
+import { generateSchemaAndValue, validateSchema } from '../../utils/reqValidation';
+import { BadRequest } from '../../errors/errRequest';
 
 // # 게시물 전체 조회
 export const list: Middleware = async ctx => {
+  const { 'p-id': pId, tag }: { 'p-id'?: string; tag?: string } = ctx.request.query;
+
+  const schemaAndValue = generateSchemaAndValue({ pId, tag });
+  if (!validateSchema(ctx, ...schemaAndValue)) {
+    throw new BadRequest({ message: ' shcema 오류', error: ctx.state.error });
+  }
+
   const postService = new PostService();
   const listResult = await postService.getAllPost();
   if (!listResult.success) {
@@ -31,8 +38,8 @@ export const write: Middleware = async ctx => {
   }
   const writeForm: RequestBody = ctx.request.body;
 
-  const schema = generateSchema(writeForm);
-  if (!validateSchema(ctx, schema)) {
+  const schemaAndValue = generateSchemaAndValue(writeForm);
+  if (!validateSchema(ctx, ...schemaAndValue)) {
     throw new BadRequest({ message: 'shcema 오류', error: ctx.state.error });
   }
 
@@ -49,8 +56,8 @@ export const write: Middleware = async ctx => {
 export const remove: Middleware = async ctx => {
   const { id: postId }: { id: string } = ctx.params;
 
-  const schema = generateSchema({ id: postId });
-  if (!validateSchema(ctx, schema, 'params')) {
+  const schemaAndValue = generateSchemaAndValue({ postId });
+  if (!validateSchema(ctx, ...schemaAndValue)) {
     throw new BadRequest({ message: 'shcema 오류', error: ctx.state.error });
   }
 

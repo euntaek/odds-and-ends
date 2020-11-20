@@ -5,7 +5,7 @@ import jwt from 'jsonwebtoken';
 import AuthService from '../../services/AuthService';
 
 import { REFRESH_TOKEN_SECRET } from '../../constans';
-import { generateSchema, validateSchema } from '../../utils/reqValidation';
+import { generateSchemaAndValue, validateSchema } from '../../utils/reqValidation';
 import { BadRequest, Conflict, NotFound, Unauthorized } from '../../errors/errRequest';
 
 // # 회원가입
@@ -20,8 +20,8 @@ export const register: Middleware = async ctx => {
   }
   const userForm: RequestBody = ctx.request.body;
 
-  const schema = generateSchema(userForm);
-  if (!validateSchema(ctx, schema)) {
+  const schemaAndValue = generateSchemaAndValue(userForm);
+  if (!validateSchema(ctx, ...schemaAndValue)) {
     throw new BadRequest({ message: 'shcema 오류', error: ctx.state.error });
   }
 
@@ -53,8 +53,8 @@ export const login: Middleware = async ctx => {
   }
   const loginForm: RequestBody = ctx.request.body;
 
-  const schema = generateSchema(loginForm);
-  if (!validateSchema(ctx, schema)) {
+  const schemaAndValue = generateSchemaAndValue(loginForm);
+  if (!validateSchema(ctx, ...schemaAndValue)) {
     throw new BadRequest({ message: 'shcema 오류', error: ctx.state.error });
   }
   const authService = new AuthService();
@@ -74,8 +74,8 @@ export const editProfile: Middleware = async ctx => {
   }
   const profileForm: RequestBody = ctx.request.body;
 
-  const schema = generateSchema(profileForm);
-  if (!validateSchema(ctx, schema)) {
+  const schemaAndValue = generateSchemaAndValue(profileForm);
+  if (!validateSchema(ctx, ...schemaAndValue)) {
     throw new BadRequest({ message: 'shcema 오류', error: ctx.state.error });
   }
 
@@ -105,8 +105,8 @@ export const uploadThumbnail: Middleware = async ctx => {
 export const refresh: Middleware = async ctx => {
   const { refreshToken }: { refreshToken: string } = ctx.request.body;
 
-  const schema = generateSchema({ refreshToken });
-  if (!validateSchema(ctx, schema)) {
+  const schemaAndValue = generateSchemaAndValue({ refreshToken });
+  if (!validateSchema(ctx, ...schemaAndValue)) {
     throw new BadRequest({ message: 'shcema 오류', error: ctx.state.error });
   }
 
@@ -123,8 +123,8 @@ export const refresh: Middleware = async ctx => {
 export const emailConfirmation: Middleware = async ctx => {
   const { emailAuthToken }: { emailAuthToken: string } = ctx.request.body;
 
-  const schema = generateSchema({ emailAuthToken });
-  if (!validateSchema(ctx, schema)) {
+  const schemaAndValue = generateSchemaAndValue({ emailAuthToken });
+  if (!validateSchema(ctx, ...schemaAndValue)) {
     throw new BadRequest({ message: ' shcema 오류', error: ctx.state.error });
   }
 
@@ -146,9 +146,8 @@ export const emailConfirmation: Middleware = async ctx => {
 // # 중복 확인
 export const duplicateCheck: Middleware = async ctx => {
   const data: { email?: string; username?: string } = ctx.request.query;
-  console.log(data);
-  const schema = generateSchema(data);
-  if (!validateSchema(ctx, schema, 'query')) {
+  const schemaAndValue = generateSchemaAndValue(data);
+  if (!validateSchema(ctx, ...schemaAndValue)) {
     throw new BadRequest({ message: ' shcema 오류', error: ctx.state.error });
   }
   const authService = new AuthService();
@@ -162,10 +161,6 @@ export const duplicateCheck: Middleware = async ctx => {
 
 // # 테스트
 export const test: Middleware = async ctx => {
-  const authService = new AuthService();
-
-  const user = await authService.test(ctx.state.user.id);
-
   ctx.status = StatusCodes.OK;
   // ctx.body = user;
 };

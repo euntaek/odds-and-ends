@@ -3,6 +3,10 @@ import Joi, { ObjectSchema, SchemaMap } from 'joi';
 
 const schemaMap = {
   id: Joi.string().uuid().required(),
+  userId: Joi.string().uuid().required(),
+  postId: Joi.string().uuid().required(),
+  pId: Joi.number(),
+  refComment: Joi.string().uuid(),
   email: Joi.string().email().required(),
   password: Joi.string().min(6).max(24).required(),
   username: Joi.string()
@@ -24,34 +28,31 @@ const schemaMap = {
   tags: Joi.array().items(Joi.string()).required(),
   images: Joi.array().items(Joi.string()),
   tag: Joi.string().max(255),
-  'post-id': Joi.string().uuid().required(),
-  'p-id': Joi.number().required(),
-  'ref-comment': Joi.string().uuid().required(),
 };
 
-type GenerateSchema = (schemaKeys: { [key in keyof typeof schemaMap]?: any }) => ObjectSchema;
+type ReqData = { [key in keyof typeof schemaMap]?: any };
+type GenerateSchemaAndValue = (reqData: ReqData) => [ObjectSchema, ReqData];
 
-export const generateSchema: GenerateSchema = schemaKeys => {
+export const generateSchemaAndValue: GenerateSchemaAndValue = reqData => {
   const schema: SchemaMap = {};
 
-  for (const key in schemaKeys) {
+  for (const key in reqData) {
     schema[key] = schemaMap[key as keyof typeof schemaMap];
   }
-  return Joi.object().keys(schema);
+  return [Joi.object().keys(schema), reqData];
 };
 
 export const validateSchema = (
   ctx: RouterContext,
   schema: ObjectSchema,
-  reqPropertyName: 'body' | 'query' | 'params' = 'body',
+  reqData: ReqData,
 ): boolean => {
-  const requestData = reqPropertyName === 'params' ? ctx.params : ctx.request[reqPropertyName];
-  if (Object.keys(requestData).length === 0) {
+  if (Object.keys(reqData).length === 0) {
     ctx.state.error = 'requestData의 객체가 비여있습니다.';
     return false;
   }
 
-  const validtaion = schema.validate(requestData);
+  const validtaion = schema.validate(reqData);
   if (validtaion.error) {
     ctx.state.error = validtaion.error;
     return false;
