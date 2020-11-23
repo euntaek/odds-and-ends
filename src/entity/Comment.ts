@@ -10,7 +10,7 @@ import {
   BaseEntity,
   OneToMany,
   Generated,
-  Brackets,
+  DeepPartial,
 } from 'typeorm';
 
 import Post from './Post';
@@ -38,24 +38,21 @@ export default class Comment extends BaseEntity {
   deletedAt!: Date | null;
 
   @Column({ type: 'uuid', nullable: true })
-  refComment: string;
+  refCommentId: string;
 
   @ManyToOne(() => Comment)
-  @JoinColumn({ name: 'ref_comment' })
-  refCommentId!: Comment;
+  @JoinColumn()
+  refComment!: Comment;
 
-  @OneToMany(() => Comment, comment => comment.refCommentId)
+  @OneToMany(() => Comment, comment => comment.refComment)
   subComments: Comment[];
 
   @Column({ type: 'uuid', nullable: true })
-  replyTo: string;
+  replyToId: string;
 
-  @ManyToOne(() => Comment)
-  @JoinColumn({ name: 'reply_to' })
-  replyToId!: Comment;
-
-  @OneToMany(() => Comment, comment => comment.replyToId)
-  replies: Comment[];
+  @ManyToOne(() => User)
+  @JoinColumn()
+  replyTo!: User;
 
   @Column({ type: 'uuid' })
   userId!: string;
@@ -71,29 +68,37 @@ export default class Comment extends BaseEntity {
   @JoinColumn()
   post!: Post;
 
-  static async getAll(
-    postId: string,
-    pId?: string,
-    refComment?: string,
-    limit = 10,
-  ): Promise<Comment[]> {
-    const basicQb = this.createQueryBuilder('comment')
+  static async getAll(postId: string, pId?: string, refComment?: string, limit = 100): Promise<Comment[]> {
+    const qb = this.createQueryBuilder('comment')
       .leftJoin('comment.user', 'user')
       .leftJoin('comment.post', 'post')
       .addSelect(['user.id', 'user.username'])
       .leftJoin('user.profile', 'profile')
       .addSelect(['profile.id', 'profile.displayName', 'profile.thumbnail'])
-      .loadRelationCountAndMap('comment.subCommentCount', 'comment.subComments')
       .where('post.id = :postId', { postId })
       .orderBy('comment.pId', 'ASC')
       .limit(limit);
 
-    const refinedQb = refComment
-      ? basicQb.andWhere('comment.refComment = :refComment', { refComment })
-      : basicQb.andWhere('comment.refComment is null');
+    const readRepliesQb = refComment
+      ? qb
+          .leftJoin('comment.replyTo', 'replyTo')
+          .addSelect(['replyTo.id', 'replyTo.username'])
+          .andWhere('comment.refComment = :refComment', { refComment })
+      : qb
+          .andWhere('comment.refComment is null')
+          .loadRelationCountAndMap('comment.subCommentCount', 'comment.subComments');
 
     return pId
-      ? await refinedQb.andWhere('comment.pId > :pId', { pId: parseInt(pId, 10) }).getMany()
-      : await refinedQb.getMany();
+      ? await readRepliesQb.andWhere('comment.pId > :pId', { pId: parseInt(pId, 10) }).getMany()
+      : await readRepliesQb.getMany();
+  }
+
+  static async createOneAndSave(writForm: DeepPartial<Comment>): Promise<Comment> {
+    return await this.create(writForm).save();
+  }
+
+  static async findOneById(commentId: string): Promise<Comment | null> {
+    const comment = await this.createQueryBuilder('comment').where('comment.id =:commentId', { commentId }).getOne();
+    return comment || null;
   }
 }

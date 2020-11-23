@@ -9,16 +9,16 @@ export const list: Middleware = async ctx => {
   const {
     'post-id': postId,
     'p-id': pId,
-    'ref-comment': refComment,
+    'ref-comment': refCommentId,
   }: { 'post-id': string; 'p-id'?: string; 'ref-comment': string } = ctx.request.query;
 
-  const schemaAndValue = generateSchemaAndValue({ postId, pId, refComment });
+  const schemaAndValue = generateSchemaAndValue({ postId, pId, refCommentId });
   if (!validateSchema(ctx, ...schemaAndValue)) {
     throw new BadRequest({ message: ' shcema 오류', error: ctx.state.error });
   }
 
   const commentService = new CommentService();
-  const listResult = await commentService.list(postId, pId, refComment);
+  const listResult = await commentService.list(postId, pId, refCommentId);
   if (!listResult.success) {
     throw new BadRequest('댓글 조회 실패');
   }
@@ -28,19 +28,23 @@ export const list: Middleware = async ctx => {
 
 export const write: Middleware = async ctx => {
   interface RequestBody {
-    id: string;
+    postId: string;
     content: string;
-    refComment: string;
+    refCommentId?: string;
+    replyToId?: string;
   }
   const writeForm: RequestBody = ctx.request.body;
-
-  const schemaAndValue = generateSchemaAndValue(writeForm);
+  const { postId, content, refCommentId, replyToId } = writeForm;
+  const schemaAndValue = generateSchemaAndValue({ postId, content, refCommentId, replyToId });
   if (!validateSchema(ctx, ...schemaAndValue)) {
     throw new BadRequest({ message: 'shcema 오류', error: ctx.state.error });
   }
-
-  ctx.status = StatusCodes.OK;
-  ctx.body = 'OK';
+  const commentService = new CommentService();
+  const writeResult = await commentService.write(ctx.state.user, { postId, content, refCommentId, replyToId });
+  if (!writeResult.success) {
+    throw new BadRequest(writeResult.error);
+  }
+  ctx.status = StatusCodes.NO_CONTENT;
 };
 
 export const update: Middleware = async ctx => {

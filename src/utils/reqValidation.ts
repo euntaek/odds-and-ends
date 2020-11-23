@@ -6,7 +6,8 @@ const schemaMap = {
   userId: Joi.string().uuid().required(),
   postId: Joi.string().uuid().required(),
   pId: Joi.number(),
-  refComment: Joi.string().uuid(),
+  refCommentId: Joi.string().uuid(),
+  replyToId: Joi.string().uuid(),
   email: Joi.string().email().required(),
   password: Joi.string().min(6).max(24).required(),
   username: Joi.string()
@@ -42,11 +43,7 @@ export const generateSchemaAndValue: GenerateSchemaAndValue = reqData => {
   return [Joi.object().keys(schema), reqData];
 };
 
-export const validateSchema = (
-  ctx: RouterContext,
-  schema: ObjectSchema,
-  reqData: ReqData,
-): boolean => {
+export const validateSchema = (ctx: RouterContext, schema: ObjectSchema, reqData: ReqData): boolean => {
   if (Object.keys(reqData).length === 0) {
     ctx.state.error = 'requestData의 객체가 비여있습니다.';
     return false;
