@@ -1,4 +1,4 @@
-import { DeepPartial, getManager } from 'typeorm';
+import { getManager } from 'typeorm';
 
 import Post from '../entity/Post';
 import PostImage from '../entity/PostImage';
@@ -11,24 +11,30 @@ function successData<T>(data?: T): ServiceData<T> {
   return { success: true, data };
 }
 function failureData(error: ErrorParams | string) {
-  return typeof error === 'string'
-    ? { success: false, error: { message: error } }
-    : { success: false, error };
+  return typeof error === 'string' ? { success: false, error: { message: error } } : { success: false, error };
 }
 
 class PostService {
   // # 게시물 전체 조회
-  async getAllPost(pId?: number): Promise<ServiceData<Post[]>> {
+  async getAllPost(user?: User, tag?: string, pId?: string): Promise<ServiceData<Post[]>> {
+    console.log(user, tag, pId);
+
     try {
-      const posts = await Post.getAll(pId, 20);
-      return successData(posts);
+      if (user) {
+        // 팔로워 게시물만 검색...
+        const posts = await Post.getAll();
+        return successData(posts);
+      } else {
+        const posts = await Post.getAll('', tag, pId);
+        return successData(posts);
+      }
     } catch (error) {
       return failureData({ message: '게시물 조회 실패', error });
     }
   }
 
   // # 게시물 작성
-  async write(
+  async createOnePost(
     user: User,
     writeForm: { content: string; tags: string[]; images: string[] },
   ): Promise<ServiceData<Post>> {
@@ -36,13 +42,9 @@ class PostService {
     const post = await getManager().transaction(async transactionalEntityManager => {
       try {
         // 태그 저장
-        const tags = await transactionalEntityManager.save(
-          await this.createManyTag(writeForm.tags),
-        );
+        const tags = await transactionalEntityManager.save(await this.createManyTag(writeForm.tags));
         // 게시물 이미지 저장
-        const images = await transactionalEntityManager.save(
-          await this.createManyPostImage(writeForm.images),
-        );
+        const images = await transactionalEntityManager.save(await this.createManyPostImage(writeForm.images));
         // 게시물 저장
         return await transactionalEntityManager.save(
           Post.createOne({ content: writeForm.content, tags, images, userId: user.id }),
@@ -55,16 +57,15 @@ class PostService {
   }
 
   // # 게시물 삭제
-  async removeOnePost(postId: string, userId: string): Promise<ServiceData<boolean>> {
+  async removeOnePost(user: User, postId: string): Promise<ServiceData<boolean>> {
     try {
       const post = await Post.findOneById(postId);
-      console.log('post: ', post);
-      if (!post || post.userId !== userId)
+      if (!post || post.userId !== user.id)
         return failureData({
           message: '게시물 삭제 실패',
-          error: { post, userId, message: '게시물이 없음 or 자신의 게시물이 아님' },
+          error: { post, user, message: '게시물이 없음 or 자신의 게시물이 아님' },
         });
-      await post.remove();
+      await Post.delete({ id: postId });
       return successData();
     } catch (error) {
       throw new InternalServerError({ message: '게시물 삭제 실패', error });
@@ -91,7 +92,7 @@ class PostService {
   }
 
   async test() {
-    const data = await Post.delete({ id: 'b9141681-8952-4c5e-a2b6-0675095d148b' });
+    const data = await Post.delete({ id: '793f9532-6011-475d-b24d-a38637a8b5b0' });
     return data;
   }
 }

@@ -16,7 +16,7 @@ export const list: Middleware = async ctx => {
   }
 
   const postService = new PostService();
-  const listResult = await postService.getAllPost();
+  const listResult = await postService.getAllPost(ctx.state.user, tag, pId);
   if (!listResult.success) {
     throw new BadRequest(listResult.error);
   }
@@ -44,12 +44,12 @@ export const write: Middleware = async ctx => {
   }
 
   const postService = new PostService();
-  const resultWrite = await postService.write(ctx.state.user, writeForm);
-  if (!resultWrite.success || !resultWrite.data) {
+  const writeResult = await postService.createOnePost(ctx.state.user, writeForm);
+  if (!writeResult.success || !writeResult.data) {
     throw new BadRequest('게시물 작성 실패');
   }
   ctx.status = StatusCodes.OK;
-  ctx.body = resultWrite.data;
+  ctx.body = writeResult.data;
 };
 
 // # 게시물 삭제
@@ -62,7 +62,7 @@ export const remove: Middleware = async ctx => {
   }
 
   const postService = new PostService();
-  const removeResult = await postService.removeOnePost(postId, ctx.state.user.id);
+  const removeResult = await postService.removeOnePost(ctx.state.user, postId);
   if (!removeResult.success) {
     throw new BadRequest(removeResult.error);
   }

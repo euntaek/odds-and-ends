@@ -11,9 +11,7 @@ import {
   ManyToMany,
   JoinColumn,
   JoinTable,
-  FindManyOptions,
   DeepPartial,
-  PrimaryColumn,
 } from 'typeorm';
 
 import User from './User';
@@ -39,10 +37,10 @@ export default class Post extends BaseEntity {
   @UpdateDateColumn({ type: 'timestamptz', select: false })
   updatedAt!: Date;
 
-  @Column({ type: 'uuid', select: false })
+  @Column({ type: 'uuid' })
   userId!: string;
 
-  @ManyToOne(type => User, { onDelete: 'CASCADE' })
+  @ManyToOne(type => User, user => user.posts, { onDelete: 'CASCADE' })
   @JoinColumn()
   user!: User;
 
@@ -56,7 +54,9 @@ export default class Post extends BaseEntity {
   @JoinTable({ name: 'post_and_tag' })
   tags!: Tag[];
 
-  static async getAll(pId: number | null = null, limit = 20): Promise<Post[]> {
+  static async getAll(userId?: string, tagId?: string, pId?: string, limit?: number): Promise<Post[]>;
+  static async getAll(userIds?: string[], tagId?: string, pId?: string, limit?: number): Promise<Post[]>;
+  static async getAll(userIds?: string | string[], tagId?: string, pId?: string, limit = 20): Promise<Post[]> {
     const qb = this.createQueryBuilder('post')
       .leftJoin('post.user', 'user')
       .addSelect(['user.id', 'user.username'])
@@ -64,19 +64,17 @@ export default class Post extends BaseEntity {
       .addSelect(['profile.id', 'profile.displayName', 'profile.thumbnail'])
       .leftJoinAndSelect('post.tags', 'tags')
       .loadRelationCountAndMap('post.commnetCount', 'post.comments')
-      // .where() 팔로워 팔로잉
+      .where('', { tagId })
       .orderBy('post.pId', 'DESC')
       .limit(limit);
 
-    return pId ? await qb.andWhere('post.pId < :pId', { pId: pId }).getMany() : await qb.getMany();
+    return pId ? await qb.andWhere('post.pId < :pId', { pId: parseInt(pId, 10) }).getMany() : await qb.getMany();
   }
   static createOne(postForm: DeepPartial<Post>): Post {
     return this.create(postForm);
   }
   static async findOneById(postId: string): Promise<Post | null> {
-    const post = await this.createQueryBuilder('post')
-      .where('post.id =:postId', { postId })
-      .getOne();
+    const post = await this.createQueryBuilder('post').where('post.id =:postId', { postId }).getOne();
     return post || null;
   }
 }
