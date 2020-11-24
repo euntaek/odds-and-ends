@@ -5,6 +5,7 @@ const schemaMap = {
   id: Joi.string().uuid().required(),
   userId: Joi.string().uuid().required(),
   postId: Joi.string().uuid().required(),
+  commentId: Joi.string().uuid().required(),
   pId: Joi.number(),
   refCommentId: Joi.string().uuid(),
   replyToId: Joi.string().uuid(),

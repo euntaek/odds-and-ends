@@ -14,7 +14,7 @@ function failureData(error: ErrorParams | string) {
 }
 
 class CommentService {
-  async list(postId: string, pId?: string, refComment?: string): Promise<ServiceData<Comment[]>> {
+  async getAllComment(postId: string, pId?: string, refComment?: string): Promise<ServiceData<Comment[]>> {
     try {
       const comments = await Comment.getAll(postId, pId, refComment);
       return successData(comments);
@@ -23,7 +23,7 @@ class CommentService {
     }
   }
 
-  async write(
+  async createOneComment(
     user: User,
     writeForm: { postId: string; content: string; refCommentId?: string; replyToId?: string },
   ): Promise<ServiceData<Comment>> {
@@ -38,6 +38,21 @@ class CommentService {
       return successData(comment);
     } catch (error) {
       throw new InternalServerError({ message: '댓글 작성 실패', error });
+    }
+  }
+
+  async removeOneComment(user: User, commentId: string): Promise<ServiceData> {
+    try {
+      const comment = await Comment.findOneById(commentId);
+      if (!comment || comment.userId !== user.id)
+        return failureData({
+          message: '게시물 삭제 실패',
+          error: { comment, user, message: '댓글이 없음 or 자신의 댓글 아님' },
+        });
+      await comment.softRemove();
+      return successData();
+    } catch (error) {
+      throw new InternalServerError({ message: '게시물 삭제 실패', error });
     }
   }
 

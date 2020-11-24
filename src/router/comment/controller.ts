@@ -18,7 +18,7 @@ export const list: Middleware = async ctx => {
   }
 
   const commentService = new CommentService();
-  const listResult = await commentService.list(postId, pId, refCommentId);
+  const listResult = await commentService.getAllComment(postId, pId, refCommentId);
   if (!listResult.success) {
     throw new BadRequest('댓글 조회 실패');
   }
@@ -40,7 +40,12 @@ export const write: Middleware = async ctx => {
     throw new BadRequest({ message: 'shcema 오류', error: ctx.state.error });
   }
   const commentService = new CommentService();
-  const writeResult = await commentService.write(ctx.state.user, { postId, content, refCommentId, replyToId });
+  const writeResult = await commentService.createOneComment(ctx.state.user, {
+    postId,
+    content,
+    refCommentId,
+    replyToId,
+  });
   if (!writeResult.success) {
     throw new BadRequest(writeResult.error);
   }
@@ -53,8 +58,17 @@ export const update: Middleware = async ctx => {
 };
 
 export const remove: Middleware = async ctx => {
+  const { id: commentId }: { id: string } = ctx.params;
+  const schemaAndValue = generateSchemaAndValue({ commentId });
+  if (!validateSchema(ctx, ...schemaAndValue)) {
+    throw new BadRequest({ message: 'shcema 오류', error: ctx.state.error });
+  }
+  const commentService = new CommentService();
+  const removeResult = await commentService.removeOneComment(ctx.state.user, commentId);
+  if (!removeResult.success) {
+    throw new BadRequest(removeResult.error);
+  }
   ctx.status = StatusCodes.OK;
-  ctx.body = 'OK';
 };
 
 export const test: Middleware = async ctx => {
