@@ -68,37 +68,6 @@ class AuthService {
     }
   }
 
-  // # 프로필 수정
-  async editPforile(
-    user: User,
-    profileForm: { displayName?: string; about?: string; thumbnail?: string },
-  ): Promise<ServiceData> {
-    try {
-      const { displayName: displayName, about } = profileForm;
-      const isEdited = await Profile.upadteOne(user.profile.id, { displayName, about });
-      if (!isEdited) {
-        return failureData({ message: '프로필 수정 실패', error: 'isEdited is false' });
-      }
-      return successData();
-    } catch (error) {
-      throw new InternalServerError({ message: '프로필 수정 실패', error });
-    }
-  }
-
-  // # 프로필 이미지 업로드
-  async uploadThumbnail(user: User, file: S3File): Promise<ServiceData<boolean>> {
-    try {
-      const thumbnail = file.location;
-      const isUpload = await Profile.upadteOne(user.profile.id, { thumbnail });
-      if (!isUpload) {
-        return failureData({ message: '프로필 수정 실패', error: 'isUpload is false' });
-      }
-      return successData();
-    } catch (error) {
-      throw new InternalServerError({ message: '프로필 이미지 업로드 실패', error });
-    }
-  }
-
   // # 새로고침
   async refresh(userId: string): Promise<ServiceData<UserToken>> {
     try {
