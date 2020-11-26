@@ -13,9 +13,7 @@ function successData<T>(data?: T): ServiceData<T> {
   return { success: true, data };
 }
 function failureData(error: ErrorParams | string) {
-  return typeof error === 'string'
-    ? { success: false, error: { message: error } }
-    : { success: false, error };
+  return typeof error === 'string' ? { success: false, error: { message: error } } : { success: false, error };
 }
 
 class AuthService {
@@ -38,14 +36,10 @@ class AuthService {
     const user = await getManager().transaction(async transactionalEntityManager => {
       try {
         // 프로필 저장
-        const profile = await transactionalEntityManager.save(
-          Profile.createOne({ displayName, about, thumbnail }),
-        );
+        const profile = await transactionalEntityManager.save(Profile.createOne({ displayName, about, thumbnail }));
         // 사용자 저장
         const hashedPassword = await hashPssword(password);
-        return await transactionalEntityManager.save(
-          User.createOne({ email, hashedPassword, username, profile }),
-        );
+        return await transactionalEntityManager.save(User.createOne({ email, hashedPassword, username, profile }));
       } catch (error) {
         throw new InternalServerError({ message: '회원가입 실패', error });
       }
@@ -183,18 +177,6 @@ class AuthService {
       return successData();
     } catch (error) {
       throw new InternalServerError({ message: '사용자 인증 실패', error });
-    }
-  }
-
-  // # 사용자 찾기
-  async findUsersByOptions(options: FindOneOptions<User>): Promise<ServiceData<User>> {
-    try {
-      const user = await User.findOneByOptions(options);
-
-      if (!user) return failureData('존재하지 않는 사용자입니다.');
-      return successData(user);
-    } catch (error) {
-      throw new InternalServerError({ message: '사용자 찾기 실패', error });
     }
   }
 

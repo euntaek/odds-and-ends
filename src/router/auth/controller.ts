@@ -66,41 +66,6 @@ export const login: Middleware = async ctx => {
   ctx.body = result.data;
 };
 
-// # 프로필 수정
-export const editProfile: Middleware = async ctx => {
-  interface RequestBody {
-    displayName?: string;
-    about?: string;
-  }
-  const profileForm: RequestBody = ctx.request.body;
-
-  const schemaAndValue = generateSchemaAndValue(profileForm);
-  if (!validateSchema(ctx, ...schemaAndValue)) {
-    throw new BadRequest({ message: 'shcema 오류', error: ctx.state.error });
-  }
-
-  const authService = new AuthService();
-  const pfofileEditResult = await authService.editPforile(ctx.state.user, profileForm);
-  if (!pfofileEditResult.success) {
-    throw new BadRequest(pfofileEditResult.error);
-  }
-  const userResult = await authService.findUsersByOptions(ctx.state.user.id);
-  if (!userResult.success) {
-    throw new BadRequest(userResult.error);
-  }
-  ctx.status = StatusCodes.OK;
-  ctx.body = userResult.data;
-};
-
-// thumbnail 업로드
-export const uploadThumbnail: Middleware = async ctx => {
-  const authService = new AuthService();
-  const result = await authService.uploadThumbnail(ctx.state.user, ctx.request.file);
-  if (!result.success) {
-    throw new BadRequest(result.error);
-  }
-  ctx.status = StatusCodes.NO_CONTENT;
-};
 // # 리프레쉬
 export const refresh: Middleware = async ctx => {
   const { refreshToken }: { refreshToken: string } = ctx.request.body;
@@ -143,20 +108,10 @@ export const emailConfirmation: Middleware = async ctx => {
   ctx.body = 'User Confirmed!!';
 };
 
-// # 중복 확인
-export const duplicateCheck: Middleware = async ctx => {
-  const data: { email?: string; username?: string } = ctx.request.query;
-  const schemaAndValue = generateSchemaAndValue(data);
-  if (!validateSchema(ctx, ...schemaAndValue)) {
-    throw new BadRequest({ message: ' shcema 오류', error: ctx.state.error });
-  }
-  const authService = new AuthService();
-  const result = await authService.findUsersByOptions({ where: { ...data } });
-  if (result.success) {
-    throw new Conflict({ message: '존재하는 사용자입니다.', error: { query: data } });
-  }
+// # 로그인 체크(유저 정보)
+export const check: Middleware = async ctx => {
   ctx.status = StatusCodes.OK;
-  ctx.body = { mesage: `사용 가능한 ${Object.keys(data).join(', ')} 입니다.` };
+  ctx.body = ctx.state.user;
 };
 
 // # 테스트
