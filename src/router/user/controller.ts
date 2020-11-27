@@ -14,33 +14,25 @@ export const list: Middleware = async ctx => {
 
 // # 사용자 조회
 export const read: Middleware = async ctx => {
-  const { idOrUsername }: { idOrUsername: string } = ctx.params;
-  const isUsername = idOrUsername[0] === '@';
-  const schemaAndValue = generateSchemaAndValue(
-    isUsername ? { username: idOrUsername.slice(1) } : { id: idOrUsername },
-  );
+  ctx.status = StatusCodes.OK;
+  ctx.body = ctx.state.targetUser;
+};
+
+// # 사용자 게시물 조회(전체)
+export const userPosts: Middleware = async ctx => {
+  const { 'p-id': pId }: { 'p-id': string } = ctx.request.query;
+
+  const schemaAndValue = generateSchemaAndValue({ pId });
   if (!validateSchema(ctx, ...schemaAndValue)) {
     throw new BadRequest({ message: ' shcema 오류', error: ctx.state.error });
   }
   const userService = new UserService();
-  const getOneUserResult = await userService.getOneUser(schemaAndValue[1]);
-  if (!getOneUserResult.success) {
-    throw new BadRequest(getOneUserResult.error);
-  }
+  const listResult = await userService.getAllPost(ctx.state.user, pId);
   ctx.status = StatusCodes.OK;
-  ctx.body = getOneUserResult.data;
+  ctx.body = listResult.data;
 };
 
-export const userPosts: Middleware = async ctx => {
-  const { id: userId }: { id: string } = ctx.params;
-  const schemaAndValue = generateSchemaAndValue({ userId });
-  if (!validateSchema(ctx, ...schemaAndValue)) {
-    throw new BadRequest({ message: ' shcema 오류', error: ctx.state.error });
-  }
-
-  ctx.status = StatusCodes.OK;
-};
-
+// # 사용자 댓글 조회(전체) -- 추후 구현
 export const userComments: Middleware = async ctx => {
   const { id: userId }: { id: string } = ctx.params;
   const schemaAndValue = generateSchemaAndValue({ userId });
@@ -101,4 +93,26 @@ export const uploadThumbnail: Middleware = async ctx => {
     throw new BadRequest(result.error);
   }
   ctx.status = StatusCodes.NO_CONTENT;
+};
+
+export const checkUser: Middleware = async (ctx, next) => {
+  const { idOrUsername }: { idOrUsername: string } = ctx.params;
+
+  const isUsername = idOrUsername[0] === '@';
+  const { key, value }: { key: 'id' | 'username'; value: string } = isUsername
+    ? { key: 'username', value: idOrUsername.slice(1) }
+    : { key: 'id', value: idOrUsername };
+
+  const schemaAndValue = generateSchemaAndValue({ [key]: value });
+  if (!validateSchema(ctx, ...schemaAndValue)) {
+    throw new BadRequest({ message: ' shcema 오류', error: ctx.state.error });
+  }
+
+  const userService = new UserService();
+  const getOneUserResult = await userService.getOneUser(key, value);
+  if (!getOneUserResult.success) {
+    throw new BadRequest(getOneUserResult.error);
+  }
+  ctx.state.targetUser = getOneUserResult.data;
+  return next();
 };

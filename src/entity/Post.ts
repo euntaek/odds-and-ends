@@ -54,21 +54,21 @@ export default class Post extends BaseEntity {
   @JoinTable({ name: 'post_and_tag' })
   tags!: Tag[];
 
-  static async getAll(userId?: string, tagId?: string, pId?: string, limit?: number): Promise<Post[]>;
-  static async getAll(userIds?: string[], tagId?: string, pId?: string, limit?: number): Promise<Post[]>;
-  static async getAll(userIds?: string | string[], tagId?: string, pId?: string, limit = 20): Promise<Post[]> {
+  static async getAll(userId?: string | string[], tagName?: string, pId?: string, limit = 20): Promise<Post[]> {
     const qb = this.createQueryBuilder('post')
       .leftJoin('post.user', 'user')
       .addSelect(['user.id', 'user.username'])
       .leftJoin('user.profile', 'profile')
       .addSelect(['profile.id', 'profile.displayName', 'profile.thumbnail'])
-      .leftJoinAndSelect('post.tags', 'tags')
+      .leftJoinAndSelect('post.tags', 'tag')
       .loadRelationCountAndMap('post.commnetCount', 'post.comments')
-      .where('', { tagId })
+      .where(tagName ? 'tag.name = :tagName' : '', { tagName })
       .orderBy('post.pId', 'DESC')
       .limit(limit);
 
-    return pId ? await qb.andWhere('post.pId < :pId', { pId: parseInt(pId, 10) }).getMany() : await qb.getMany();
+    const refinedQb = !Array.isArray(userId) ? qb.andWhere('user.id = :userId', { userId }) : qb;
+
+    return pId ? await refinedQb.andWhere('post.pId < :pId', { pId: parseInt(pId, 10) }).getMany() : await qb.getMany();
   }
   static createOne(postForm: DeepPartial<Post>): Post {
     return this.create(postForm);

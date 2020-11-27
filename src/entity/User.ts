@@ -115,6 +115,13 @@ export default class User extends BaseEntity {
       .getOne();
   }
 
+  static async findOneByKeyValue(key: 'id' | 'username' | 'email', value: string): Promise<User | undefined> {
+    return await this.createQueryBuilder('user')
+      .leftJoinAndSelect('user.profile', 'profile')
+      .where(`user.${key} = :value`, { value })
+      .getOne();
+  }
+
   static async findOneByOptions(options: FindOneOptions<User>): Promise<User | undefined> {
     return await this.findOne(options);
   }
