@@ -46,13 +46,13 @@ class CommentService {
       const comment = await Comment.findOneById(commentId);
       if (!comment || comment.userId !== user.id)
         return failureData({
-          message: '게시물 삭제 실패',
-          error: { comment, user, message: '댓글이 없음 or 자신의 댓글 아님' },
+          message: '댓글 삭제 실패',
+          error: !comment ? '삭제 된 게시물 or 없는 게시물' : '본인 댓글이 아닙니다.',
         });
       await comment.softRemove();
       return successData();
     } catch (error) {
-      throw new InternalServerError({ message: '게시물 삭제 실패', error });
+      throw new InternalServerError({ message: '댓글 삭제 실패', error });
     }
   }
 
