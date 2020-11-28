@@ -10,6 +10,8 @@ import {
   OneToMany,
   DeepPartial,
   FindOneOptions,
+  ManyToMany,
+  JoinTable,
 } from 'typeorm';
 import bcrypt from 'bcrypt';
 
@@ -58,6 +60,21 @@ export default class User extends BaseEntity {
 
   @OneToMany(type => Comment, comment => comment.user)
   comments!: Comment[];
+
+  @ManyToMany(type => User, user => user.followings)
+  @JoinTable({
+    name: 'follow',
+    joinColumn: {
+      name: 'follower_id',
+    },
+    inverseJoinColumn: {
+      name: 'following_id',
+    },
+  })
+  followers!: User[];
+
+  @ManyToMany(type => User, user => user.followers)
+  followings!: User[];
 
   // serialize(): UserInfo {
   //   return {
