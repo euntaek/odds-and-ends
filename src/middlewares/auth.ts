@@ -12,9 +12,11 @@ export const hydrateUser: Koa.Middleware = async (ctx, next) => {
   const accessToken = (ctx.headers.authorization as string).split(' ')[1];
 
   try {
+    console.log('\x1b[32m%s\x1b[0m', 'start--------------hydrate user--------------');
     const decoded = jwt.verify(accessToken, ACCESS_TOKEN_SECRET) as any;
     if (typeof decoded === 'string') return next();
-    ctx.state.user = (await User.findOneById(decoded.id)) ?? undefined;
+    ctx.state.user = (await User.findOneByKeyValue('id', decoded.id)) ?? undefined;
+    console.log('\x1b[32m%s\x1b[0m', 'end----------------hydrate user--------------');
     return next();
   } catch (error) {
     return next();

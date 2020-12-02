@@ -2,11 +2,12 @@ import { Middleware } from '@koa/router';
 import { StatusCodes } from 'http-status-codes';
 import jwt from 'jsonwebtoken';
 
+import User from '../../entity/User';
 import AuthService from '../../services/AuthService';
 
 import { REFRESH_TOKEN_SECRET } from '../../constans';
 import { generateSchemaAndValue, validateSchema } from '../../utils/reqValidation';
-import { BadRequest, Conflict, NotFound, Unauthorized } from '../../errors/errRequest';
+import { BadRequest, Conflict, Forbidden, NotFound, Unauthorized } from '../../errors/errRequest';
 
 // # 회원가입
 export const register: Middleware = async ctx => {
@@ -108,10 +109,30 @@ export const emailConfirmation: Middleware = async ctx => {
   ctx.body = 'User Confirmed!!';
 };
 
-// # 로그인 체크(유저 정보)
+// # 사용자 체크
 export const check: Middleware = async ctx => {
   ctx.status = StatusCodes.OK;
   ctx.body = ctx.state.user;
+};
+
+// # 로그인 상태 체크
+export const checkLoggedIn: Middleware = async (ctx, next) => {
+  const user: User = ctx.state.user;
+  if (!user) {
+    throw new Unauthorized({ message: '로그인이 필요합니다', error: '권한 없는 접근' });
+  }
+  if (!user.isConfirmed) {
+    throw new Forbidden({ message: '인증 되지 않은 사용자입니다.', error: '권한 없는 접근' });
+  }
+  return next();
+};
+
+// # 로그아웃 상태 체크
+export const checkLoggedOut: Middleware = async (ctx, next) => {
+  if (ctx.state.user) {
+    throw new Forbidden({ message: '잘못 된 접근입니다.', error: '권한 없는 접근' });
+  }
+  return next();
 };
 
 // # 테스트

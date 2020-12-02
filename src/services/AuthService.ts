@@ -1,4 +1,4 @@
-import { DeepPartial, FindOneOptions, getManager } from 'typeorm';
+import { DeepPartial, getManager } from 'typeorm';
 
 import User from '../entity/User';
 import Profile from '../entity/Profile';
@@ -29,7 +29,7 @@ class AuthService {
     const { email, password, username, displayName, about, thumbnail } = registerForm;
 
     // 사용자 유무 확인
-    const exists = await User.findOneByEmail(email);
+    const exists = await User.findOneByKeyValue('email', email);
     if (exists) return failureData('존재하는 사용자입니다.');
 
     // 회원가입 트래잭션 (user, profile)
@@ -53,7 +53,7 @@ class AuthService {
       const { email, password } = loginForm;
 
       // 사용자 확인
-      const user = await User.findOneByEmail(email);
+      const user = await User.findOneByKeyValue('email', email);
 
       // 사용자 존재 유무와 비밀번호 확인
       if (!user || !(await user.checkPassword(password))) {
@@ -71,7 +71,7 @@ class AuthService {
   // # 새로고침
   async refresh(userId: string): Promise<ServiceData<UserToken>> {
     try {
-      const user = await User.findOneById(userId);
+      const user = await User.findOneByKeyValue('id', userId);
       if (!user) return failureData({ message: '리프레쉬 실패', error: 'User not found' });
       const token = await user.generateUserToken();
       return successData(token);
