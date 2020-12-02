@@ -1,12 +1,11 @@
-import { DeepPartial, FindOneOptions, getManager } from 'typeorm';
+import { FindOneOptions } from 'typeorm';
 
 import User from '../entity/User';
 import Profile from '../entity/Profile';
+import Follow from '../entity/Follow';
+import Post from '../entity/Post';
 
 import { InternalServerError } from '../errors/errRequest';
-import { createEmailTemplate } from '../etc/emailTemplates';
-import sendMail from '../utils/sendMail';
-import Post from '../entity/Post';
 
 function successData<T>(data?: T): ServiceData<T> {
   return { success: true, data };
@@ -68,6 +67,7 @@ class UserService {
     }
   }
 
+  //# 사용자 가져오기
   async getOneUser(key: 'id' | 'username', value: string): Promise<ServiceData<User>> {
     try {
       const user = await User.findOneByKeyValue(key, value);
@@ -78,11 +78,36 @@ class UserService {
     }
   }
 
-  // # 테스트
-  async test(userId: string): Promise<any> {
+  // # 팔로우
+  async follow(user: User, targetUser: User): Promise<ServiceData<Follow>> {
     try {
-      const data = await User.findOneByOptions({ where: { id: userId }, relations: ['posts'] });
-      console.log(data);
+      const follow = await Follow.createOneAndSave(user.id, targetUser.id);
+      return successData(follow);
+    } catch (error) {
+      throw new InternalServerError({ message: '팔로우 실패', error });
+    }
+  }
+
+  // # 팔로우 관계 가져오기
+  async getOneFollow(user: User, targetUser: User): Promise<ServiceData<Follow>> {
+    try {
+      const follow = await Follow.findOneById(user.id, targetUser.id);
+      if (!follow) return failureData('팔로우 관계가 아닙니다.');
+      return successData(follow);
+    } catch (error) {
+      throw new InternalServerError({ message: '팔로우 관계 가져오기 실패', error });
+    }
+  }
+
+  // async getManyFollower(user: User): Promise<any> {
+  //   try {
+  //   } catch (error) {}
+  // }
+
+  // # 테스트
+  async test(): Promise<any> {
+    try {
+      return await User.findOneByKeyValue('id', 'e2e6d849-a5e8-4aad-b627-7390c263d229');
     } catch (error) {
       throw new InternalServerError({ message: 'auth service test', error });
     }

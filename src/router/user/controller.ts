@@ -4,7 +4,8 @@ import { StatusCodes } from 'http-status-codes';
 import UserService from '../../services/UserService';
 
 import { generateSchemaAndValue, validateSchema } from '../../utils/reqValidation';
-import { BadRequest, Conflict, NotFound, Unauthorized } from '../../errors/errRequest';
+import { BadRequest, Conflict } from '../../errors/errRequest';
+import Follow from '../../entity/Follow';
 
 // # 사용자 조회(전체)
 export const list: Middleware = async ctx => {
@@ -95,6 +96,40 @@ export const uploadThumbnail: Middleware = async ctx => {
   ctx.status = StatusCodes.NO_CONTENT;
 };
 
+export const follow: Middleware = async ctx => {
+  if (ctx.state.user.id === ctx.state.targetUser.id) {
+    throw new BadRequest('자기 자신을 팔로우할 수 없습니다.');
+  }
+
+  const userService = new UserService();
+  const getOneFollowResult = await userService.getOneFollow(ctx.state.user, ctx.state.targetUser);
+  if (getOneFollowResult.success && getOneFollowResult.data) {
+    throw new BadRequest('이미 팔로우한 유저입니다.');
+  }
+  const followResult = await userService.follow(ctx.state.user, ctx.state.targetUser);
+  if (followResult.error) {
+    throw new BadRequest();
+  }
+  ctx.status = StatusCodes.OK;
+  ctx.body = followResult.data;
+};
+
+export const unfollow: Middleware = async ctx => {
+  if (ctx.state.user.id === ctx.state.targetUser.id) {
+    throw new BadRequest('자기 자신을 언팔로우할 수 없습니다.');
+  }
+
+  const userService = new UserService();
+  const getOneFollowResult = await userService.getOneFollow(ctx.state.user, ctx.state.targetUser);
+  if (!getOneFollowResult.success || !getOneFollowResult.data) {
+    throw new BadRequest(getOneFollowResult.error);
+  }
+  // const unfollow = await getOneFollowResult.data.remove();
+
+  ctx.status = StatusCodes.OK;
+  ctx.body = 'unfollow';
+};
+
 export const checkUser: Middleware = async (ctx, next) => {
   const { idOrUsername }: { idOrUsername: string } = ctx.params;
 
@@ -109,10 +144,21 @@ export const checkUser: Middleware = async (ctx, next) => {
   }
 
   const userService = new UserService();
+  console.log('\x1b[32m%s\x1b[0m', 'start--------------check user--------------');
   const getOneUserResult = await userService.getOneUser(key, value);
+  console.log('\x1b[32m%s\x1b[0m', 'end----------------check user--------------');
   if (!getOneUserResult.success) {
     throw new BadRequest(getOneUserResult.error);
   }
   ctx.state.targetUser = getOneUserResult.data;
   return next();
+};
+
+export const test: Middleware = async ctx => {
+  const userService = new UserService();
+
+  const data = await userService.test();
+
+  ctx.status = StatusCodes.OK;
+  ctx.body = data;
 };
