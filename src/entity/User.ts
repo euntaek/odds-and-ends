@@ -3,19 +3,17 @@ import {
   Entity,
   PrimaryGeneratedColumn,
   Column,
-  Generated,
   CreateDateColumn,
   UpdateDateColumn,
   OneToOne,
   OneToMany,
   DeepPartial,
   FindOneOptions,
-  ManyToMany,
-  JoinTable,
 } from 'typeorm';
 import bcrypt from 'bcrypt';
 
 import Profile from './Profile';
+import Follow from './Follow';
 import Post from './Post';
 import Comment from './Comment';
 
@@ -61,20 +59,11 @@ export default class User extends BaseEntity {
   @OneToMany(type => Comment, comment => comment.user)
   comments!: Comment[];
 
-  @ManyToMany(type => User, user => user.followings)
-  @JoinTable({
-    name: 'follow',
-    joinColumn: {
-      name: 'follower_id',
-    },
-    inverseJoinColumn: {
-      name: 'following_id',
-    },
-  })
-  followers!: User[];
+  @OneToMany(type => Follow, follow => follow.following)
+  followers!: Follow[];
 
-  @ManyToMany(type => User, user => user.followers)
-  followings!: User[];
+  @OneToMany(type => Follow, follow => follow.follower)
+  followings!: Follow[];
 
   // serialize(): UserInfo {
   //   return {
@@ -119,22 +108,11 @@ export default class User extends BaseEntity {
     return this.create(userForm);
   }
 
-  static async findOneById(id: string): Promise<User | undefined> {
-    return await this.createQueryBuilder('user')
-      .leftJoinAndSelect('user.profile', 'profile')
-      .where('user.id = :id', { id })
-      .getOne();
-  }
-  static async findOneByEmail(email: string): Promise<User | undefined> {
-    return await this.createQueryBuilder('user')
-      .leftJoinAndSelect('user.profile', 'profile')
-      .where('user.email = :email', { email })
-      .getOne();
-  }
-
   static async findOneByKeyValue(key: 'id' | 'username' | 'email', value: string): Promise<User | undefined> {
     return await this.createQueryBuilder('user')
       .leftJoinAndSelect('user.profile', 'profile')
+      .loadRelationCountAndMap('user.followerCount', 'user.followers')
+      .loadRelationCountAndMap('user.followingsCount', 'user.followings')
       .where(`user.${key} = :value`, { value })
       .getOne();
   }
