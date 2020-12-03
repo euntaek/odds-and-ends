@@ -81,7 +81,7 @@ class UserService {
   // # 팔로우
   async follow(user: User, targetUser: User): Promise<ServiceData<Follow>> {
     try {
-      const follow = await Follow.createOneAndSave(user.id, targetUser.id);
+      const follow = await Follow.createOneAndSave(user, targetUser);
       return successData(follow);
     } catch (error) {
       throw new InternalServerError({ message: '팔로우 실패', error });
@@ -99,15 +99,31 @@ class UserService {
     }
   }
 
-  // async getManyFollower(user: User): Promise<any> {
-  //   try {
-  //   } catch (error) {}
-  // }
+  // # 팔로워
+  async getAllFollowers(user: User): Promise<any> {
+    try {
+      const followers = await Follow.getAllFollowersById(user.id);
+      return successData(followers);
+    } catch (error) {
+      throw new InternalServerError({ message: '팔로우 관계 가져오기 실패', error });
+    }
+  }
+
+  // # 팔로잉 가져오기
+  async getAllFollowings(user: User): Promise<any> {
+    try {
+      const followers = await Follow.getAllFollowingsById(user.id);
+      return successData(followers);
+    } catch (error) {
+      throw new InternalServerError({ message: '팔로우 관계 가져오기 실패', error });
+    }
+  }
 
   // # 테스트
   async test(): Promise<any> {
     try {
-      return await User.findOneByKeyValue('id', 'e2e6d849-a5e8-4aad-b627-7390c263d229');
+      const followers = await Follow.getAllFollowersById('ae3c79bb-e736-4519-bfb0-273117a5aaae');
+      return followers;
     } catch (error) {
       throw new InternalServerError({ message: 'auth service test', error });
     }

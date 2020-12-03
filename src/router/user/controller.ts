@@ -16,7 +16,7 @@ export const list: Middleware = async ctx => {
 // # 사용자 조회
 export const read: Middleware = async ctx => {
   ctx.status = StatusCodes.OK;
-  ctx.body = ctx.state.targetUser;
+  ctx.body = { targetUser: ctx.state.targetUser, follow: ctx.state.follow };
 };
 
 // # 사용자 게시물 조회(전체)
@@ -45,7 +45,7 @@ export const userComments: Middleware = async ctx => {
 };
 
 // # 중복 확인
-export const duplicateCheck: Middleware = async ctx => {
+export const checkDuplicate: Middleware = async ctx => {
   const data: { email?: string; username?: string } = ctx.request.query;
   const schemaAndValue = generateSchemaAndValue(data);
   if (!validateSchema(ctx, ...schemaAndValue)) {
@@ -86,7 +86,7 @@ export const editProfile: Middleware = async ctx => {
   ctx.body = userResult.data;
 };
 
-// thumbnail 업로드
+// # thumbnail 업로드
 export const uploadThumbnail: Middleware = async ctx => {
   const userService = new UserService();
   const result = await userService.updateOneThumbnail(ctx.state.user, ctx.request.file);
@@ -96,16 +96,15 @@ export const uploadThumbnail: Middleware = async ctx => {
   ctx.status = StatusCodes.NO_CONTENT;
 };
 
+// # 팔로우
 export const follow: Middleware = async ctx => {
   if (ctx.state.user.id === ctx.state.targetUser.id) {
     throw new BadRequest('자기 자신을 팔로우할 수 없습니다.');
   }
-
-  const userService = new UserService();
-  const getOneFollowResult = await userService.getOneFollow(ctx.state.user, ctx.state.targetUser);
-  if (getOneFollowResult.success && getOneFollowResult.data) {
+  if (ctx.state.follow) {
     throw new BadRequest('이미 팔로우한 유저입니다.');
   }
+  const userService = new UserService();
   const followResult = await userService.follow(ctx.state.user, ctx.state.targetUser);
   if (followResult.error) {
     throw new BadRequest();
@@ -114,22 +113,36 @@ export const follow: Middleware = async ctx => {
   ctx.body = followResult.data;
 };
 
+// # 언팔로우
 export const unfollow: Middleware = async ctx => {
   if (ctx.state.user.id === ctx.state.targetUser.id) {
     throw new BadRequest('자기 자신을 언팔로우할 수 없습니다.');
   }
-
-  const userService = new UserService();
-  const getOneFollowResult = await userService.getOneFollow(ctx.state.user, ctx.state.targetUser);
-  if (!getOneFollowResult.success || !getOneFollowResult.data) {
-    throw new BadRequest(getOneFollowResult.error);
+  if (!ctx.state.follow) {
+    throw new BadRequest('팔로우 관계가 아닙니다.');
   }
-  // const unfollow = await getOneFollowResult.data.remove();
-
+  await (ctx.state.follow as Follow).remove();
   ctx.status = StatusCodes.OK;
   ctx.body = 'unfollow';
 };
 
+// # 팔로워 조회
+export const followers: Middleware = async ctx => {
+  const userService = new UserService();
+  const followersResult = await userService.getAllFollowers(ctx.state.user);
+  ctx.status = StatusCodes.OK;
+  ctx.body = followersResult.data;
+};
+
+// # 팔로잉 조회
+export const followings: Middleware = async ctx => {
+  const userService = new UserService();
+  const followersResult = await userService.getAllFollowings(ctx.state.user);
+  ctx.status = StatusCodes.OK;
+  ctx.body = followersResult.data;
+};
+
+// # 유저 체크
 export const checkUser: Middleware = async (ctx, next) => {
   const { idOrUsername }: { idOrUsername: string } = ctx.params;
 
@@ -151,6 +164,20 @@ export const checkUser: Middleware = async (ctx, next) => {
     throw new BadRequest(getOneUserResult.error);
   }
   ctx.state.targetUser = getOneUserResult.data;
+  return next();
+};
+
+// # 팔로우 체크
+export const checkFollow: Middleware = async (ctx, next) => {
+  if (!ctx.state.user || !ctx.state.targetUser || ctx.state.user.id === ctx.state.targetUser.id) {
+    return next();
+  }
+  const userService = new UserService();
+  console.log('\x1b[32m%s\x1b[0m', 'start--------------follow user--------------');
+  const getOneFollowResult = await userService.getOneFollow(ctx.state.user, ctx.state.targetUser);
+  console.log('\x1b[32m%s\x1b[0m', 'end----------------follow user--------------');
+  console.log(getOneFollowResult.data);
+  ctx.state.follow = getOneFollowResult.data;
   return next();
 };
 
