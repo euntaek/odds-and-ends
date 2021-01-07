@@ -66,15 +66,15 @@ export default class Post extends BaseEntity {
       .orderBy('post.pId', 'DESC')
       .limit(limit);
 
-    const refinedQb = !Array.isArray(userId) ? qb.andWhere('user.id = :userId', { userId }) : qb;
+    // const refinedQb = !Array.isArray(userId) ? qb.andWhere('user.id = :userId', { userId }) : qb;
 
-    return pId ? await refinedQb.andWhere('post.pId < :pId', { pId: parseInt(pId, 10) }).getMany() : await qb.getMany();
+    return pId ? await qb.andWhere('post.pId < :pId', { pId: parseInt(pId, 10) }).getMany() : await qb.getMany();
   }
   static createOne(postForm: DeepPartial<Post>): Post {
     return this.create(postForm);
   }
-  static async findOneById(postId: string): Promise<Post | null> {
+  static async findOneById(postId: string): Promise<Post | undefined> {
     const post = await this.createQueryBuilder('post').where('post.id =:postId', { postId }).getOne();
-    return post || null;
+    return post;
   }
 }
