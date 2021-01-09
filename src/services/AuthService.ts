@@ -54,7 +54,8 @@ class AuthService {
 
       // 사용자 확인
       const user = await User.findOneByKeyValue('email', email);
-
+      console.log(user);
+      
       // 사용자 존재 유무와 비밀번호 확인
       if (!user || !(await user.checkPassword(password))) {
         return failureData('이메일 또는 비밀번호를 잘못 입력하셨습니다.');

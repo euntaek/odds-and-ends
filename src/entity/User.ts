@@ -10,7 +10,8 @@ import {
   DeepPartial,
   FindOneOptions,
 } from 'typeorm';
-import bcrypt from 'bcrypt';
+// import bcrypt from 'bcrypt';
+import bcrypt from 'bcryptjs';
 
 import Profile from './Profile';
 import Follow from './Follow';

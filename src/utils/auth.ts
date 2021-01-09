@@ -1,10 +1,11 @@
-import bcrypt from 'bcrypt';
+// import bcrypt from 'bcrypt';
+import bcrypt from 'bcryptjs';
 import crypto from 'crypto';
 import jwt, { Secret, SignOptions } from 'jsonwebtoken';
 
 // password 암호화
 export const hashPssword = async (password: string): Promise<string> => {
-  const SALT_OR_ROUNDS = 10;
+  const SALT_OR_ROUNDS = await bcrypt.genSalt(10);
   return await bcrypt.hash(password, SALT_OR_ROUNDS);
 };
 
@@ -25,7 +26,7 @@ export const generateJWT = async (
   return new Promise((resolve, reject) => {
     jwt.sign(payload, secretKey, signOptions, (err, encoded) => {
       if (err) reject(err);
-      resolve(encoded);
+      resolve(encoded as string);
     });
   });
 };
