@@ -20,7 +20,7 @@ export const generateJWT = async (
   options: SignOptions,
 ): Promise<string> => {
   const signOptions: SignOptions = {
-    issuer: '160chars.com',
+    issuer: 'teanpho.com',
     ...options,
   };
   return new Promise((resolve, reject) => {

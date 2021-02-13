@@ -29,7 +29,7 @@ const transporter = nodemailer.createTransport({
 const sendMail = async ({ to, subject, html }: MailParams): Promise<ServiceData> => {
   try {
     const info = await transporter.sendMail({
-      from: `160CHARS<${SMTP_USER}>`,
+      from: `Teanpho<${SMTP_USER}>`,
       to,
       subject,
       html,

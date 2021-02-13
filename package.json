@@ -1,5 +1,5 @@
 {
-  "name": "160chars",
+  "name": "teanpho",
   "version": "1.0.0",
   "main": "index.js",
   "author": "Euntaek Kim <zmn5119@gmail.com>",
@@ -7,7 +7,7 @@
   "scripts": {
     "dev": "dotenv -e .env.development -- ts-node-dev --transpile-only ./src/server.ts",
     "build": "tsc",
-    "prestart": "rm -rf dist"
+    "prebuild": "rm -rf dist"
   },
   "dependencies": {
     "@koa/cors": "^3.1.0",

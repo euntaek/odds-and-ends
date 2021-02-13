@@ -12,4 +12,8 @@ router.use('/user', user.routes());
 router.use('/post', post.routes());
 router.use('/comment', comment.routes());
 
+router.get('/health', ctx => {
+  ctx.body = 'OK!';
+});
+
 export default router;
