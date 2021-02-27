@@ -1,16 +1,18 @@
 import next from 'next';
 import express from 'express';
+import redis from 'redis';
+import expressSession from 'express-session';
+import connectRedis from 'connect-redis';
 
-import { session } from './middleware';
 import api from './api';
-import { IS_PROD } from './constants';
+import { IS_PROD } from './lib/constants';
+import { session } from './middleware';
+
+const PORT = IS_PROD ? 3000 : 3030;
 
 (async () => {
-  const PORT = IS_PROD ? 3000 : 3030;
-
   const app = express();
-
-  const nextApp = next({ dev: true });
+  const nextApp = next({ dev: !IS_PROD });
   await nextApp.prepare();
 
   const handle = nextApp.getRequestHandler();
