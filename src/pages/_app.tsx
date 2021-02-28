@@ -1,5 +1,5 @@
-import { css, Global } from '@emotion/react';
-import reset from 'emotion-reset';
+import { Global } from '@emotion/react';
+import { globalStyle } from '@/lib/styles';
 
 function MyApp({ Component, pageProps }) {
   return (
@@ -9,14 +9,5 @@ function MyApp({ Component, pageProps }) {
     </>
   );
 }
-
-const globalStyle = css`
-  ${reset}
-  *, *::after, *::before {
-    box-sizing: border-box;
-    -moz-osx-font-smoothing: grayscale;
-    -webkit-font-smoothing: antialiased;
-  }
-`;
 
 export default MyApp;
