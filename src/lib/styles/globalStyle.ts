@@ -1,7 +1,7 @@
 import { css } from '@emotion/react';
 import reset from 'emotion-reset';
 
-const fontface = css`
+const fontFace = css`
   @font-face {
     font-family: 'Noto Sans KR';
     src: url('/fonts/NotoSansKR/NotoSansKR-Regular.woff2') format('woff2'),
@@ -29,18 +29,12 @@ const fontface = css`
 `;
 
 export const globalStyle = css`
-  ${fontface}
   ${reset}
+  ${fontFace}
   *, *::after, *::before {
     box-sizing: border-box;
     -moz-osx-font-smoothing: grayscale;
     -webkit-font-smoothing: antialiased;
-  }
-
-  h1 {
-    font-family: 'Noto Sans KR';
-  }
-  h2 {
-    font-family: 'system-ui';
+    font: 1rem/1.75 Noto Sans KR, sans-serif;
   }
 `;

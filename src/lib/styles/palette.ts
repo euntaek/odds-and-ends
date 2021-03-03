@@ -1,9 +1,16 @@
 export const palette = {
+  accent: {
+    blue: '#0C8EFF',
+    red: '#F96555',
+  },
+  basic: {
+    black: ['#2D2D2D', '#2D2D2D99', '#2D2D2D4D', '#2D2D2D1A'],
+    white: ['#FFFFFF'],
+  },
   gray: {
     '1': 'F3F3F3',
     '2': 'C4C4C4',
     '3': 'A0A0A0',
-    '4': '2D2D2D',
   },
   blue: {
     '1': '57B1FF',
