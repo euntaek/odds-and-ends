@@ -35,6 +35,12 @@ export const globalStyle = css`
     box-sizing: border-box;
     -moz-osx-font-smoothing: grayscale;
     -webkit-font-smoothing: antialiased;
-    font: 1rem/1.75 Noto Sans KR, sans-serif;
+    -moz-appearance: none;
+    -webkit-appearance: none;
+    appearance: none;
+    font-family: Noto Sans KR, sans-serif;
+  }
+  input {
+    -webkit-appearance: none;
   }
 `;
