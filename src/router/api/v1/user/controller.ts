@@ -4,7 +4,7 @@ import { StatusCodes } from 'http-status-codes';
 import UserService from '../../services/UserService';
 
 import { generateSchemaAndValue, validateSchema } from '../../utils/reqValidation';
-import { BadRequest, Conflict } from '../../errors/errRequest';
+import { BadRequest } from '../../errors/errRequest';
 import Follow from '../../entity/Follow';
 
 // # 사용자 조회(전체)
@@ -46,18 +46,17 @@ export const userComments: Middleware = async ctx => {
 
 // # 중복 확인
 export const checkDuplicate: Middleware = async ctx => {
-  const data: { email?: string; username?: string } = ctx.request.query;
-  const schemaAndValue = generateSchemaAndValue(data);
+  const query: { email?: string; username?: string } = ctx.request.query;
+  const schemaAndValue = generateSchemaAndValue(query);
   if (!validateSchema(ctx, ...schemaAndValue)) {
     throw new BadRequest({ message: ' shcema 오류', error: ctx.state.error });
   }
+
   const userService = new UserService();
-  const result = await userService.findUsersByOptions({ where: { ...data } });
-  if (result.success) {
-    throw new Conflict({ message: '존재하는 사용자입니다.', error: { query: data } });
-  }
+  const result = await userService.findUsersByOptions({ where: { ...query } });
+
   ctx.status = StatusCodes.OK;
-  ctx.body = { mesage: `사용 가능한 ${Object.keys(data).join(', ')} 입니다.` };
+  ctx.body = { user: result.data || null };
 };
 
 // # 프로필 수정
