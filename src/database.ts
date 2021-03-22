@@ -1,7 +1,5 @@
 import { createConnection, getConnection, ConnectionOptions } from 'typeorm';
 import { SnakeNamingStrategy } from 'typeorm-naming-strategies';
-import 'reflect-metadata';
-import 'pg';
 
 import {
   TYPEORM_TYPE,
@@ -13,40 +11,31 @@ import {
   TYPEORM_SYNCHRONIZE,
   TYPEORM_LOGGING,
   TYPEORM_DROPSCHEMA,
-  TYPEORM_ENTITIES,
   TYPEORM_MIGRATIONS,
   TYPEORM_SUBSCRIBERS,
 } from './constans';
 
-export default {
-  async connection(): Promise<void> {
-    const connectionOptions: ConnectionOptions = {
-      type: TYPEORM_TYPE as any,
-      host: TYPEORM_HOST,
-      port: TYPEORM_PORT,
-      username: TYPEORM_USERNAME,
-      password: TYPEORM_PASSWORD,
-      database: TYPEORM_DATABASE,
-      synchronize: TYPEORM_SYNCHRONIZE,
-      logging: TYPEORM_LOGGING,
-      dropSchema: TYPEORM_DROPSCHEMA,
-      entities: [TYPEORM_ENTITIES],
-      migrations: [TYPEORM_MIGRATIONS],
-      subscribers: [TYPEORM_SUBSCRIBERS],
-      namingStrategy: new SnakeNamingStrategy(),
-    };
-    try {
-      await createConnection(connectionOptions);
-      console.log('Databae connected');
-    } catch (e) {
-      throw new Error(e);
-    }
-  },
-  async connectionClose(): Promise<void> {
-    try {
-      await getConnection().close();
-    } catch (e) {
-      throw new Error(e);
-    }
-  },
+import * as entities from './entity';
+
+const ormConfig: ConnectionOptions = {
+  type: TYPEORM_TYPE,
+  host: TYPEORM_HOST,
+  port: TYPEORM_PORT,
+  username: TYPEORM_USERNAME,
+  password: TYPEORM_PASSWORD,
+  database: TYPEORM_DATABASE,
+  synchronize: TYPEORM_SYNCHRONIZE,
+  logging: TYPEORM_LOGGING,
+  dropSchema: TYPEORM_DROPSCHEMA,
+  entities: Object.values(entities),
+  migrations: [TYPEORM_MIGRATIONS],
+  subscribers: [TYPEORM_SUBSCRIBERS],
+  namingStrategy: new SnakeNamingStrategy(),
 };
+
+const dbConnection = (connectionOptions: ConnectionOptions = ormConfig) =>
+  createConnection(connectionOptions);
+
+export const dbConnectionClose = () => getConnection().close();
+
+export default dbConnection;
