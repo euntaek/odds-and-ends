@@ -17,7 +17,6 @@ declare namespace NodeJS {
     TYPEORM_SYNCHRONIZE: string;
     TYPEORM_LOGGING: string;
     TYPEORM_DROPSCHEMA: string;
-    TYPEORM_ENTITIES: string;
     TYPEORM_MIGRATIONS: string;
     TYPEORM_SUBSCRIBERS: string;
 
