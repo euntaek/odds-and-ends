@@ -10,7 +10,7 @@ import {
 } from 'typeorm';
 
 @Entity('email_authentication')
-export default class EmailAuthentication extends BaseEntity {
+export class EmailAuthentication extends BaseEntity {
   @PrimaryGeneratedColumn('uuid')
   id!: string;
 

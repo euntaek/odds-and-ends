@@ -1,9 +1,9 @@
 import { BaseEntity, Entity, PrimaryGeneratedColumn, Column, ManyToOne, Index } from 'typeorm';
 
-import User from './User';
+import { User } from './';
 
 @Entity('follow')
-export default class Follow extends BaseEntity {
+export class Follow extends BaseEntity {
   @PrimaryGeneratedColumn('uuid')
   id!: string;
 

@@ -8,10 +8,10 @@ import {
   ManyToMany,
   BaseEntity,
 } from 'typeorm';
-import Post from './Post';
+import { Post } from './';
 
 @Entity('tag')
-export default class Tag extends BaseEntity {
+export class Tag extends BaseEntity {
   @PrimaryGeneratedColumn('uuid')
   id!: string;
 

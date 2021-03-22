@@ -9,10 +9,10 @@ import {
   JoinColumn,
   DeepPartial,
 } from 'typeorm';
-import User from './User';
+import { User } from './';
 
 @Entity('profile')
-export default class Profile extends BaseEntity {
+export class Profile extends BaseEntity {
   @PrimaryGeneratedColumn('uuid')
   id!: string;
 

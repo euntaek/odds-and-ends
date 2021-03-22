@@ -8,10 +8,10 @@ import {
   BaseEntity,
   PrimaryColumn,
 } from 'typeorm';
-import Post from './Post';
+import { Post } from './';
 
 @Entity('post_image')
-export default class PostImage extends BaseEntity {
+export class PostImage extends BaseEntity {
   @PrimaryGeneratedColumn('uuid')
   id!: string;
 

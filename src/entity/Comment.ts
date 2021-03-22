@@ -12,12 +12,10 @@ import {
   Generated,
   DeepPartial,
 } from 'typeorm';
-
-import Post from './Post';
-import User from './User';
+import { Post, User } from './';
 
 @Entity('comment')
-export default class Comment extends BaseEntity {
+export class Comment extends BaseEntity {
   @PrimaryGeneratedColumn('uuid')
   id!: string;
 
@@ -68,7 +66,12 @@ export default class Comment extends BaseEntity {
   @JoinColumn()
   post!: Post;
 
-  static async getAll(postId: string, pId?: string, refComment?: string, limit = 100): Promise<Comment[]> {
+  static async getAll(
+    postId: string,
+    pId?: string,
+    refComment?: string,
+    limit = 100,
+  ): Promise<Comment[]> {
     const qb = this.createQueryBuilder('comment')
       .leftJoin('comment.user', 'user')
       .leftJoin('comment.post', 'post')
@@ -98,7 +101,9 @@ export default class Comment extends BaseEntity {
   }
 
   static async findOneById(commentId: string): Promise<Comment | null> {
-    const comment = await this.createQueryBuilder('comment').where('comment.id =:commentId', { commentId }).getOne();
+    const comment = await this.createQueryBuilder('comment')
+      .where('comment.id =:commentId', { commentId })
+      .getOne();
     return comment || null;
   }
 }

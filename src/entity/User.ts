@@ -13,10 +13,7 @@ import {
 // import bcrypt from 'bcrypt';
 import bcrypt from 'bcryptjs';
 
-import Profile from './Profile';
-import Follow from './Follow';
-import Post from './Post';
-import Comment from './Comment';
+import { Profile, Follow, Post, Comment } from './';
 
 import { generateJWT } from '../utils/auth';
 import { InternalServerError } from '../errors/errRequest';
@@ -29,7 +26,7 @@ import {
 } from '../constans';
 
 @Entity('user')
-export default class User extends BaseEntity {
+export class User extends BaseEntity {
   @PrimaryGeneratedColumn('uuid')
   id!: string;
 
@@ -39,7 +36,7 @@ export default class User extends BaseEntity {
   @Column({ unique: true, type: 'varchar', length: 255 })
   username!: string;
 
-  @Column({ select: false })
+  @Column({ type: 'varchar', select: false })
   hashedPassword!: string;
 
   @Column({ type: 'boolean', default: false })
@@ -51,7 +48,8 @@ export default class User extends BaseEntity {
   @UpdateDateColumn({ type: 'timestamptz', select: false })
   updatedAt!: Date;
 
-  @OneToOne(type => Profile, profile => profile.user, { eager: true })
+  // { eager: true } : 같이 가져올지 안가져올지
+  @OneToOne(type => Profile, profile => profile.user, { eager: false })
   profile!: Profile;
 
   @OneToMany(type => Post, post => post.user)
@@ -109,7 +107,10 @@ export default class User extends BaseEntity {
     return this.create(userForm);
   }
 
-  static async findOneByKeyValue(key: 'id' | 'username' | 'email', value: string): Promise<User | undefined> {
+  static async findOneByKeyValue(
+    key: 'id' | 'username' | 'email',
+    value: string,
+  ): Promise<User | undefined> {
     return await this.createQueryBuilder('user')
       .leftJoinAndSelect('user.profile', 'profile')
       .loadRelationCountAndMap('user.followerCount', 'user.followers')

@@ -14,13 +14,10 @@ import {
   DeepPartial,
 } from 'typeorm';
 
-import User from './User';
-import Comment from './Comment';
-import PostImage from './PostImage';
-import Tag from './Tag';
+import { User, Comment, PostImage, Tag } from './';
 
 @Entity('post')
-export default class Post extends BaseEntity {
+export class Post extends BaseEntity {
   @PrimaryGeneratedColumn('uuid')
   id!: string;
 
@@ -54,7 +51,12 @@ export default class Post extends BaseEntity {
   @JoinTable({ name: 'post_and_tag' })
   tags!: Tag[];
 
-  static async getAll(userId?: string | string[], tagName?: string, pId?: string, limit = 20): Promise<Post[]> {
+  static async getAll(
+    userId?: string | string[],
+    tagName?: string,
+    pId?: string,
+    limit = 20,
+  ): Promise<Post[]> {
     const qb = this.createQueryBuilder('post')
       .leftJoin('post.user', 'user')
       .addSelect(['user.id', 'user.username'])
@@ -68,13 +70,17 @@ export default class Post extends BaseEntity {
 
     // const refinedQb = !Array.isArray(userId) ? qb.andWhere('user.id = :userId', { userId }) : qb;
 
-    return pId ? await qb.andWhere('post.pId < :pId', { pId: parseInt(pId, 10) }).getMany() : await qb.getMany();
+    return pId
+      ? await qb.andWhere('post.pId < :pId', { pId: parseInt(pId, 10) }).getMany()
+      : await qb.getMany();
   }
   static createOne(postForm: DeepPartial<Post>): Post {
     return this.create(postForm);
   }
   static async findOneById(postId: string): Promise<Post | undefined> {
-    const post = await this.createQueryBuilder('post').where('post.id =:postId', { postId }).getOne();
+    const post = await this.createQueryBuilder('post')
+      .where('post.id =:postId', { postId })
+      .getOne();
     return post;
   }
 }
