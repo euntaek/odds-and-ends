@@ -1,17 +1,15 @@
 import { FindOneOptions } from 'typeorm';
 
-import User from '../entity/User';
-import Profile from '../entity/Profile';
-import Follow from '../entity/Follow';
-import Post from '../entity/Post';
-
-import { InternalServerError } from '../errors/errRequest';
+import { User, Profile, Follow, Post } from '@/entity';
+import { InternalServerError } from '@/errors/errRequest';
 
 function successData<T>(data?: T): ServiceData<T> {
   return { success: true, data };
 }
 function failureData(error: ErrorParams | string) {
-  return typeof error === 'string' ? { success: false, error: { message: error } } : { success: false, error };
+  return typeof error === 'string'
+    ? { success: false, error: { message: error } }
+    : { success: false, error };
 }
 
 class UserService {
@@ -59,8 +57,6 @@ class UserService {
   async findUsersByOptions(options: FindOneOptions<User>): Promise<ServiceData<User>> {
     try {
       const user = await User.findOneByOptions(options);
-
-      if (!user) return failureData('존재하지 않는 사용자입니다.');
       return successData(user);
     } catch (error) {
       throw new InternalServerError({ message: '사용자 찾기 실패', error });
@@ -68,10 +64,11 @@ class UserService {
   }
 
   //# 사용자 가져오기
-  async getOneUser(key: 'id' | 'username', value: string): Promise<ServiceData<User>> {
+  async getOneUser(key: 'id' | 'username' | 'email', value: string): Promise<ServiceData<User>> {
     try {
       const user = await User.findOneByKeyValue(key, value);
       if (!user) return failureData('존재하지 않는 사용자입니다.');
+      console.log(user);
       return successData(user);
     } catch (error) {
       throw new InternalServerError({ message: '사용자 가져오기 실패', error });

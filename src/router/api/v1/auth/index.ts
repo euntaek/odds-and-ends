@@ -1,7 +1,7 @@
 import Router from '@koa/router';
 
 import { register, login, refresh, emailConfirmation, check, test } from './controller';
-import { checkLoggedOut, checkLoggedIn } from '../../../../middlewares';
+import { checkLoggedOut, checkLoggedIn } from '@/middlewares';
 
 const auth = new Router();
 

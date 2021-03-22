@@ -7,7 +7,7 @@ import {
   SMTP_SECURE,
   SMTP_USER,
   SMTP_PASSWORD,
-} from '../constans/smtp';
+} from '@/constans/smtp';
 
 interface MailParams {
   to: string;

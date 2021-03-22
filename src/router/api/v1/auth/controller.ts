@@ -2,12 +2,12 @@ import { Middleware } from '@koa/router';
 import { StatusCodes } from 'http-status-codes';
 import jwt from 'jsonwebtoken';
 
-import User from '../../entity/User';
-import AuthService from '../../services/AuthService';
+import { User } from '@/entity';
+import AuthService from '@/services/AuthService';
 
-import { REFRESH_TOKEN_SECRET } from '../../constans';
-import { generateSchemaAndValue, validateSchema } from '../../utils/reqValidation';
-import { BadRequest, Conflict, Forbidden, NotFound, Unauthorized } from '../../errors/errRequest';
+import { REFRESH_TOKEN_SECRET } from '@/constans';
+import { generateSchemaAndValue, validateSchema } from '@/utils/reqValidation';
+import { BadRequest, Conflict, Forbidden, NotFound, Unauthorized } from '@/errors/errRequest';
 
 // # 회원가입
 export const register: Middleware = async ctx => {
@@ -36,12 +36,13 @@ export const register: Middleware = async ctx => {
   const createdUser = registerResult.data;
 
   // 회원가입 인증 이메일 전송
-  // const sendMailResult = await authService.sendMail('register', createdUser);
+  /* 
+  const sendMailResult = await authService.sendMail('register', createdUser);
 
-  // if (!sendMailResult.success) {
-  //   throw new BadRequest({ message: '회원가입 인증 메일 전송 실패', error: sendMailResult.error });
-  // }
-
+  if (!sendMailResult.success) {
+    throw new BadRequest({ message: '회원가입 인증 메일 전송 실패', error: sendMailResult.error });
+  }
+ */
   ctx.status = StatusCodes.OK;
   ctx.body = createdUser;
 };

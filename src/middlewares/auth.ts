@@ -2,9 +2,9 @@ import Koa from 'koa';
 import { Middleware } from '@koa/router';
 import jwt from 'jsonwebtoken';
 
-import { ACCESS_TOKEN_SECRET } from '../constans/secrets';
-import User from '../entity/User';
-import { Unauthorized, Forbidden } from '../errors/errRequest';
+import { ACCESS_TOKEN_SECRET } from '@/constans/secrets';
+import { User } from '@/entity';
+import { Unauthorized, Forbidden } from '@/errors/errRequest';
 
 export const hydrateUser: Koa.Middleware = async (ctx, next) => {
   if (!ctx.request.headers.authorization) return next();

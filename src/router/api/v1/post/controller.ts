@@ -1,10 +1,10 @@
 import { Middleware } from '@koa/router';
 import { StatusCodes } from 'http-status-codes';
 
-import PostService from '../../services/PostService';
+import PostService from '@/services/PostService';
 
-import { generateSchemaAndValue, validateSchema } from '../../utils/reqValidation';
-import { BadRequest } from '../../errors/errRequest';
+import { generateSchemaAndValue, validateSchema } from '@/utils/reqValidation';
+import { BadRequest } from '@/errors/errRequest';
 
 // # 게시물 전체 조회
 export const list: Middleware = async ctx => {

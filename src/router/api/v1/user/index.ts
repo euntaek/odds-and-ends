@@ -16,7 +16,7 @@ import {
   checkFollow,
   test,
 } from './controller';
-import { checkLoggedIn, upload } from '../../middlewares';
+import { checkLoggedIn, upload } from '@/middlewares';
 
 const user = new Router();
 

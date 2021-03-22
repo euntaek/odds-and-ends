@@ -1,19 +1,19 @@
 import { DeepPartial, getManager } from 'typeorm';
 
-import User from '../entity/User';
-import Profile from '../entity/Profile';
-import EmailAuthentication from '../entity/EmailAuthentication';
+import { User, Profile, EmailAuthentication } from '@/entity';
 
-import { hashPssword, generateRandomToken } from '../utils/auth';
-import { InternalServerError } from '../errors/errRequest';
-import { createEmailTemplate } from '../etc/emailTemplates';
-import sendMail from '../utils/sendMail';
+import { hashPssword, generateRandomToken } from '@/utils/auth';
+import { InternalServerError } from '@/errors/errRequest';
+import { createEmailTemplate } from '@/etc/emailTemplates';
+import sendMail from '@/utils/sendMail';
 
 function successData<T>(data?: T): ServiceData<T> {
   return { success: true, data };
 }
 function failureData(error: ErrorParams | string) {
-  return typeof error === 'string' ? { success: false, error: { message: error } } : { success: false, error };
+  return typeof error === 'string'
+    ? { success: false, error: { message: error } }
+    : { success: false, error };
 }
 
 class AuthService {
@@ -36,10 +36,14 @@ class AuthService {
     const user = await getManager().transaction(async transactionalEntityManager => {
       try {
         // 프로필 저장
-        const profile = await transactionalEntityManager.save(Profile.createOne({ displayName, about, thumbnail }));
+        const profile = await transactionalEntityManager.save(
+          Profile.createOne({ displayName, about, thumbnail }),
+        );
         // 사용자 저장
         const hashedPassword = await hashPssword(password);
-        return await transactionalEntityManager.save(User.createOne({ email, hashedPassword, username, profile }));
+        return await transactionalEntityManager.save(
+          User.createOne({ email, hashedPassword, username, profile }),
+        );
       } catch (error) {
         throw new InternalServerError({ message: '회원가입 실패', error });
       }
@@ -55,7 +59,7 @@ class AuthService {
       // 사용자 확인
       const user = await User.findOneByKeyValue('email', email);
       console.log(user);
-      
+
       // 사용자 존재 유무와 비밀번호 확인
       if (!user || !(await user.checkPassword(password))) {
         return failureData('이메일 또는 비밀번호를 잘못 입력하셨습니다.');
@@ -82,6 +86,7 @@ class AuthService {
   }
 
   // # 이메일 전송
+  /* 
   async sendMail(type: 'register' | 'resetPassword', user: User): Promise<ServiceData> {
     try {
       const { id: userId, email } = user;
@@ -94,7 +99,8 @@ class AuthService {
     } catch (error) {
       throw new InternalServerError({ message: '이메일 전송 실패', error });
     }
-  }
+  } 
+  */
 
   // # 이메일 인증
   async emailAuthentication(

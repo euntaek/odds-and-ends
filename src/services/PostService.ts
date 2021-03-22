@@ -1,17 +1,15 @@
 import { getManager } from 'typeorm';
 
-import Post from '../entity/Post';
-import PostImage from '../entity/PostImage';
-import Tag from '../entity/Tag';
-import User from '../entity/User';
-
-import { InternalServerError } from '../errors/errRequest';
+import { Post, PostImage, Tag, User } from '@/entity';
+import { InternalServerError } from '@/errors/errRequest';
 
 function successData<T>(data?: T): ServiceData<T> {
   return { success: true, data };
 }
 function failureData(error: ErrorParams | string) {
-  return typeof error === 'string' ? { success: false, error: { message: error } } : { success: false, error };
+  return typeof error === 'string'
+    ? { success: false, error: { message: error } }
+    : { success: false, error };
 }
 
 class PostService {
@@ -42,9 +40,13 @@ class PostService {
     const post = await getManager().transaction(async transactionalEntityManager => {
       try {
         // 태그 저장
-        const tags = await transactionalEntityManager.save(await this.createManyTag(writeForm.tags));
+        const tags = await transactionalEntityManager.save(
+          await this.createManyTag(writeForm.tags),
+        );
         // 게시물 이미지 저장
-        const images = await transactionalEntityManager.save(await this.createManyPostImage(writeForm.images));
+        const images = await transactionalEntityManager.save(
+          await this.createManyPostImage(writeForm.images),
+        );
         // 게시물 저장
         return await transactionalEntityManager.save(
           Post.createOne({ content: writeForm.content, tags, images, userId: user.id }),

@@ -1,7 +1,7 @@
 import Router from '@koa/router';
 
 import { write, list, read, remove, update, uploadImages, test } from './controller';
-import { checkLoggedIn, upload } from '../../middlewares';
+import { checkLoggedIn, upload } from '@/middlewares';
 
 const post = new Router();
 

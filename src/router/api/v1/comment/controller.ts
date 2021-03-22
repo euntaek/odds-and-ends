@@ -1,9 +1,9 @@
 import { Middleware } from '@koa/router';
 import { StatusCodes } from 'http-status-codes';
 
-import { generateSchemaAndValue, validateSchema } from '../../utils/reqValidation';
-import { BadRequest } from '../../errors/errRequest';
-import CommentService from '../../services/CommentService';
+import { generateSchemaAndValue, validateSchema } from '@/utils/reqValidation';
+import { BadRequest } from '@/errors/errRequest';
+import CommentService from '@/services/CommentService';
 
 export const list: Middleware = async ctx => {
   const {

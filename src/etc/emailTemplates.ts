@@ -1,4 +1,4 @@
-import User from '../entity/User';
+import { User } from '@/entity';
 
 export const createEmailTemplate = (
   type: 'register' | 'resetPassword',
@@ -14,7 +14,7 @@ export const createEmailTemplate = (
 };
 
 const confirmationTemplate = (displayName: string, token: string) => {
-  const subject = '[심플 게시판] 이메일 인증을 해주세요.';
+  const subject = '[Teanpho] 이메일 인증을 해주세요.';
   const html = `
   <div style="padding: 26px 18px">
       <h1
@@ -46,7 +46,7 @@ const confirmationTemplate = (displayName: string, token: string) => {
         </p>
         <a
           class="btn"
-          href=http://localhost:3000/auth/test/${token}
+          href=http://localhost:3000/api/v1/auth/test/${token}
           style="
             text-decoration: none;
             color: white;

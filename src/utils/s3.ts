@@ -8,7 +8,7 @@ import {
   AWS_SECRET_ACCESS_KEY,
   AWS_REGION,
   AWS_S3_BUCKET_NAME,
-} from '../constans';
+} from '@/constans';
 
 const s3 = new AWS.S3({
   credentials: {

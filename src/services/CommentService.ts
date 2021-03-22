@@ -1,20 +1,21 @@
-import { getManager } from 'typeorm';
-
-import Comment from '../entity/Comment';
-import Post from '../entity/Post';
-import User from '../entity/User';
-
-import { InternalServerError } from '../errors/errRequest';
+import { Comment, Post, User } from '@/entity';
+import { InternalServerError } from '@/errors/errRequest';
 
 function successData<T>(data?: T): ServiceData<T> {
   return { success: true, data };
 }
 function failureData(error: ErrorParams | string) {
-  return typeof error === 'string' ? { success: false, error: { message: error } } : { success: false, error };
+  return typeof error === 'string'
+    ? { success: false, error: { message: error } }
+    : { success: false, error };
 }
 
 class CommentService {
-  async getAllComment(postId: string, pId?: string, refComment?: string): Promise<ServiceData<Comment[]>> {
+  async getAllComment(
+    postId: string,
+    pId?: string,
+    refComment?: string,
+  ): Promise<ServiceData<Comment[]>> {
     try {
       const comments = await Comment.getAll(postId, pId, refComment);
       return successData(comments);
@@ -32,7 +33,8 @@ class CommentService {
       if (!post) return failureData('존재하지 않는 게시물입니다.');
       if (writeForm.refCommentId) {
         const refComment = await Comment.findOneById(writeForm.refCommentId);
-        if (!refComment || refComment.deletedAt) return failureData('존재하지 않거나 삭제된 댓글입니다');
+        if (!refComment || refComment.deletedAt)
+          return failureData('존재하지 않거나 삭제된 댓글입니다');
       }
       const comment = await Comment.createOneAndSave({ userId: user.id, ...writeForm });
       return successData(comment);

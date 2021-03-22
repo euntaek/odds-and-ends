@@ -1,7 +1,7 @@
 import { Middleware } from '@koa/router';
 import multer from '@koa/multer';
 
-import { s3Storage } from '../utils/s3';
+import { s3Storage } from '@/utils/s3';
 
 const limits = { fileSize: 4 * 1024 * 1024 }; // 4MB
 
