@@ -1,16 +1,16 @@
 import Router from '@koa/router';
 
 import auth from './auth';
-import user from './user';
-import post from './post';
-import comment from './comment';
+import users from './users';
+import posts from './posts';
+import comments from './comments';
 
 const v1 = new Router();
 
 v1.use('/auth', auth.routes());
-v1.use('/user', user.routes());
-v1.use('/post', post.routes());
-v1.use('/comment', comment.routes());
+v1.use('/users', users.routes());
+v1.use('/posts', posts.routes());
+v1.use('/comments', comments.routes());
 
 v1.get('/health', ctx => {
   ctx.body = 'OK!';
