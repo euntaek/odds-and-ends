@@ -9,7 +9,8 @@
     "build:dev": "webpack --progress",
     "build:prod": "NODE_ENV=production webpack --progress",
     "prebuild": "rm -rf ./dist",
-    "start": "dotenv -e .env.development -- node ./dist/main.js"
+    "start": "dotenv -e .env.development -- node ./dist/main.js",
+    "start:pm2": "dotenv -e .env.development -- pm2 start ./dist/main.js --watch"
   },
   "dependencies": {
     "@koa/cors": "^3.1.0",
@@ -60,6 +61,7 @@
     "eslint": "^7.9.0",
     "eslint-config-prettier": "^6.11.0",
     "fork-ts-checker-webpack-plugin": "^6.2.0",
+    "pm2": "^4.5.5",
     "ts-node-dev": "^1.0.0-pre.62",
     "tsconfig-paths": "^3.9.0",
     "typescript": "^4.0.2",
