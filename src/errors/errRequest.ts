@@ -2,7 +2,7 @@ import { StatusCodes } from 'http-status-codes';
 
 export abstract class RequestError extends Error {
   statusCode: number;
-  error?: any;
+  name: string;
   constructor(message?: string) {
     super(message);
   }
@@ -12,8 +12,8 @@ export class InternalServerError extends RequestError {
     if (typeof errorData === 'string') {
       super(errorData);
     } else {
-      super(errorData?.message || '내부 서버 오류입니다.');
-      this.error = errorData?.error;
+      super(errorData?.message);
+      this.name = errorData?.name || 'INTERNAL_SERVER_ERROR';
     }
     this.statusCode = StatusCodes.INTERNAL_SERVER_ERROR;
   }
@@ -23,8 +23,8 @@ export class BadRequest extends RequestError {
     if (typeof errorData === 'string') {
       super(errorData);
     } else {
-      super(errorData?.message || '잘못 된 요청입니다.');
-      this.error = errorData?.error;
+      super(errorData?.message);
+      this.name = errorData?.name || 'BAD_REQUEST';
     }
     this.statusCode = StatusCodes.BAD_REQUEST;
   }
@@ -35,8 +35,8 @@ export class NotFound extends RequestError {
     if (typeof errorData === 'string') {
       super(errorData);
     } else {
-      super(errorData?.message || '리소스가 존재하지 않습니다.');
-      this.error = errorData?.error;
+      super(errorData?.message);
+      this.name = errorData?.name || 'NOT_FOUND';
     }
     this.statusCode = StatusCodes.NOT_FOUND;
   }
@@ -47,8 +47,8 @@ export class Conflict extends RequestError {
     if (typeof errorData === 'string') {
       super(errorData);
     } else {
-      super(errorData?.message || '리소스 충돌');
-      this.error = errorData?.error;
+      super(errorData?.message);
+      this.name = errorData?.name || 'CONFLICT';
     }
     this.statusCode = StatusCodes.CONFLICT;
   }
@@ -59,8 +59,8 @@ export class Unauthorized extends RequestError {
     if (typeof errorData === 'string') {
       super(errorData);
     } else {
-      super(errorData?.message || '인증이 필요합니다.');
-      this.error = errorData?.error;
+      super(errorData?.message);
+      this.name = errorData?.name || 'UNAUTHORIZED';
     }
     this.statusCode = StatusCodes.UNAUTHORIZED;
   }
@@ -71,8 +71,8 @@ export class Forbidden extends RequestError {
     if (typeof errorData === 'string') {
       super(errorData);
     } else {
-      super(errorData?.message || '잘못 된 접근입니다.');
-      this.error = errorData?.error;
+      super(errorData?.message);
+      this.name = errorData?.name || 'FORBIDDEN';
     }
     this.statusCode = StatusCodes.FORBIDDEN;
   }

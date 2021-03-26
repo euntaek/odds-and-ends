@@ -27,7 +27,7 @@ class PostService {
         return successData(posts);
       }
     } catch (error) {
-      return failureData({ message: '게시물 조회 실패', error });
+      throw new InternalServerError({ ...error, name: 'GET_ALL_POST_ERROR' });
     }
   }
 
@@ -52,7 +52,7 @@ class PostService {
           Post.createOne({ content: writeForm.content, tags, images, userId: user.id }),
         );
       } catch (error) {
-        throw new InternalServerError({ message: '게시물 작성 실패', error });
+        throw new InternalServerError({ ...error, name: 'CREATE_ONE_POST_ERROR' });
       }
     });
     return successData(post);
@@ -62,40 +62,59 @@ class PostService {
   async removeOnePost(user: User, postId: string): Promise<ServiceData<boolean>> {
     try {
       const post = await Post.findOneById(postId);
-      if (!post || post.userId !== user.id)
+      if (!post) {
         return failureData({
-          message: '게시물 삭제 실패',
-          error: { post, user, message: '게시물이 없음 or 자신의 게시물이 아님' },
+          name: 'REMOVE_ONE_POST_FAILURE',
+          message: '존재하지 않는 게시물입니다.',
         });
+      }
+      if (post.userId !== user.id) {
+        return failureData({
+          name: 'REMOVE_ONE_POST_FAILURE',
+          message: '자신의 게시물이 아닙니다.',
+        });
+      }
       await Post.delete({ id: postId });
       return successData();
     } catch (error) {
-      throw new InternalServerError({ message: '게시물 삭제 실패', error });
+      throw new InternalServerError({ ...error, name: 'REMOVE_ONE_POST_ERROR' });
     }
   }
 
   // # 태그가 존재하는지 찾고 존재하면 가져오고 없으면 새로 생성
   async createManyTag(tags: string[]): Promise<Tag[]> {
-    const createTag = async (tag: string) => {
-      const refinedTag = tag.toLowerCase();
-      const findTag = await Tag.findOneByName(refinedTag);
-      return findTag || Tag.createOne(refinedTag);
-    };
+    try {
+      const createTag = async (tag: string) => {
+        const refinedTag = tag.toLowerCase();
+        const findTag = await Tag.findOneByName(refinedTag);
+        return findTag || Tag.createOne(refinedTag);
+      };
 
-    const createTagsPromise = tags.map(tag => createTag(tag));
-    const createdTags = await Promise.all(createTagsPromise);
-    return createdTags;
+      const createTagsPromise = tags.map(tag => createTag(tag));
+      const createdTags = await Promise.all(createTagsPromise);
+      return createdTags;
+    } catch (error) {
+      throw new InternalServerError({ ...error, name: 'CREATE_MANY_TAG_ERROR' });
+    }
   }
 
   // # 이미지 주소 생성
-  async createManyPostImage(imagePaths: string[]): Promise<PostImage[]> {
-    const createdPostImages = PostImage.createMany(imagePaths);
-    return createdPostImages;
+  async createManyPostImage(imageUrls: string[]): Promise<PostImage[]> {
+    try {
+      const createdPostImages = PostImage.createMany(imageUrls);
+      return createdPostImages;
+    } catch (error) {
+      throw new InternalServerError({ ...error, name: 'CREATE_MANY_POST_INAGE_URL_ERROR' });
+    }
   }
 
   async test() {
-    const data = await Post.delete({ id: '793f9532-6011-475d-b24d-a38637a8b5b0' });
-    return data;
+    try {
+      const data = await Post.delete({ id: '793f9532-6011-475d-b24d-a38637a8b5b0' });
+      return data;
+    } catch (error) {
+      throw new InternalServerError({ ...error, name: 'POST_SERVICE_TEST_ERROR' });
+    }
   }
 }
 export default PostService;

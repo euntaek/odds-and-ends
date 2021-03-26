@@ -6,7 +6,7 @@ function successData<T>(data?: T): ServiceData<T> {
 }
 function failureData(error: ErrorParams | string) {
   return typeof error === 'string'
-    ? { success: false, error: { message: error } }
+    ? { success: false, error: { name: error } }
     : { success: false, error };
 }
 
@@ -20,7 +20,7 @@ class CommentService {
       const comments = await Comment.getAll(postId, pId, refComment);
       return successData(comments);
     } catch (error) {
-      throw new InternalServerError({ message: '댓글 조회 실패', error });
+      throw new InternalServerError({ ...error, name: 'GET_ALL_COMMENT_ERROR' });
     }
   }
 
@@ -30,16 +30,23 @@ class CommentService {
   ): Promise<ServiceData<Comment>> {
     try {
       const post = await Post.findOneById(writeForm.postId);
-      if (!post) return failureData('존재하지 않는 게시물입니다.');
+      if (!post)
+        return failureData({
+          name: 'CREATE_ONE_COMMENT_FAILURE',
+          message: '존재하지 않는 게시물입니다.',
+        });
       if (writeForm.refCommentId) {
         const refComment = await Comment.findOneById(writeForm.refCommentId);
         if (!refComment || refComment.deletedAt)
-          return failureData('존재하지 않거나 삭제된 댓글입니다');
+          return failureData({
+            name: 'CREATE_ONE_COMMENT_FAILURE',
+            message: '존재하지 않거나 삭제된 댓글입니다.',
+          });
       }
       const comment = await Comment.createOneAndSave({ userId: user.id, ...writeForm });
       return successData(comment);
     } catch (error) {
-      throw new InternalServerError({ message: '댓글 작성 실패', error });
+      throw new InternalServerError({ ...error, name: 'CREATE_ONE_COMMENT_ERROR' });
     }
   }
 
@@ -48,13 +55,13 @@ class CommentService {
       const comment = await Comment.findOneById(commentId);
       if (!comment || comment.userId !== user.id)
         return failureData({
-          message: '댓글 삭제 실패',
-          error: !comment ? '삭제 된 게시물 or 없는 게시물' : '본인 댓글이 아닙니다.',
+          name: 'REMOVE_ONE_COMMENT_FAILURE',
+          message: !comment ? '존재하지 않거나 삭제된 댓글입니다.' : '자신의 댓글이 아닙니다.',
         });
       await comment.softRemove();
       return successData();
     } catch (error) {
-      throw new InternalServerError({ message: '댓글 삭제 실패', error });
+      throw new InternalServerError({ ...error, name: 'REMOVE_ONE_COMMENT_ERROR' });
     }
   }
 
