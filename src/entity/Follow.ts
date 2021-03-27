@@ -31,7 +31,7 @@ export class Follow extends BaseEntity {
       .getOne();
   }
 
-  static async getAllFollowersById(userId: string): Promise<Follow[]> {
+  static async readFollowersById(userId: string): Promise<Follow[]> {
     return await this.createQueryBuilder('follow')
       .leftJoin('follow.follower', 'follower')
       .addSelect(['follower.id', 'follower.username'])
@@ -41,7 +41,7 @@ export class Follow extends BaseEntity {
       .getMany();
   }
 
-  static async getAllFollowingsById(userId: string): Promise<Follow[]> {
+  static async readFollowingsById(userId: string): Promise<Follow[]> {
     return await this.createQueryBuilder('follow')
       .leftJoin('follow.following', 'following')
       .addSelect(['following.id', 'following.username'])

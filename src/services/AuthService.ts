@@ -35,22 +35,30 @@ class AuthService {
     }
 
     // 회원가입 트래잭션 (user, profile)
-    const user = await getManager().transaction(async transactionalEntityManager => {
+    const createdUser = await getManager().transaction(async transactionalEntityManager => {
       try {
-        // 프로필 저장
+        // 프로필 생성 및 저장
         const profile = await transactionalEntityManager.save(
           Profile.createOne({ displayName, about, thumbnail }),
         );
-        // 사용자 저장
+        // 사용자 생성 및 저장
         const hashedPassword = await hashPssword(password);
-        return await transactionalEntityManager.save(
+        const user = await transactionalEntityManager.save(
           User.createOne({ email, hashedPassword, username, profile }),
         );
+        if (!user) {
+          throw new InternalServerError({
+            name: 'REGISTER_ERROR',
+            message: '회원가입 쿼리 실패(리턴 값이 존재하지 않음)',
+          });
+        }
+        return user;
       } catch (error) {
         throw new InternalServerError({ ...error, name: 'REGISTER_ERROR' });
       }
     });
-    return successData(user);
+
+    return successData(createdUser);
   }
 
   // # 로그인
@@ -60,10 +68,10 @@ class AuthService {
 
       // 사용자 확인
       const user = await User.findOneByKeyValue('email', email);
-      console.log(user);
+      const isPsswordValid = await user?.checkPassword(password);
 
       // 사용자 존재 유무와 비밀번호 확인
-      if (!user || !(await user.checkPassword(password))) {
+      if (!user || !isPsswordValid) {
         return failureData({
           name: 'LOGIN_FAILURE',
           message: '잘못 된 이메일 주소 또는 비밀번호입니다.',

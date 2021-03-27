@@ -98,7 +98,7 @@ export class User extends BaseEntity {
       });
       return { accessToken, refreshToken };
     } catch (error) {
-      throw new InternalServerError({ message: 'Failed to issue user jwt', error });
+      throw new InternalServerError({ ...error, name: 'USER_TOKEN_GENERATION_ERROR' });
     }
   }
 
