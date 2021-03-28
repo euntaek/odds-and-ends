@@ -67,7 +67,7 @@ class AuthService {
       const { email, password } = loginForm;
 
       // 사용자 확인
-      const user = await User.findOneByKeyValue('email', email);
+      const user = await User.findOneByKeyValue('email', email, 'soft');
       const isPsswordValid = await user?.checkPassword(password);
 
       // 사용자 존재 유무와 비밀번호 확인

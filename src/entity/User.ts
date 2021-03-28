@@ -110,13 +110,18 @@ export class User extends BaseEntity {
   static async findOneByKeyValue(
     key: 'id' | 'username' | 'email',
     value: string,
+    relation: null | 'soft' | 'hard' = null,
   ): Promise<User | undefined> {
-    return await this.createQueryBuilder('user')
-      .leftJoinAndSelect('user.profile', 'profile')
-      .loadRelationCountAndMap('user.followerCount', 'user.followers')
-      .loadRelationCountAndMap('user.followingsCount', 'user.followings')
-      .where(`user.${key} = :value`, { value })
-      .getOne();
+    const qb = this.createQueryBuilder('user').where(`user.${key} = :value`, { value });
+    const optionQb = {
+      soft: qb.leftJoinAndSelect('user.profile', 'profile'),
+      hard: qb
+        .leftJoinAndSelect('user.profile', 'profile')
+        .loadRelationCountAndMap('user.followerCount', 'user.followers')
+        .loadRelationCountAndMap('user.followingsCount', 'user.followings'),
+    };
+    const refinedQb = relation ? optionQb[relation] : qb;
+    return await refinedQb.getOne();
   }
 
   static async findOneByOptions(options: FindOneOptions<User>): Promise<User | undefined> {

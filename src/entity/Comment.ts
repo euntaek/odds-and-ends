@@ -100,10 +100,10 @@ export class Comment extends BaseEntity {
     return await this.create(writForm).save();
   }
 
-  static async findOneById(commentId: string): Promise<Comment | null> {
+  static async findOneById(commentId: string): Promise<Comment | undefined> {
     const comment = await this.createQueryBuilder('comment')
       .where('comment.id =:commentId', { commentId })
       .getOne();
-    return comment || null;
+    return comment;
   }
 }

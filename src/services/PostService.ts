@@ -14,7 +14,7 @@ function failureData(error: ErrorParams | string) {
 
 class PostService {
   // # 게시물 전체 조회
-  async getAllPost(user?: User, tag?: string, pId?: string): Promise<ServiceData<Post[]>> {
+  async getAllPosts(user?: User, tag?: string, pId?: string): Promise<ServiceData<Post[]>> {
     console.log(user, tag, pId);
 
     try {
@@ -37,7 +37,7 @@ class PostService {
     writeForm: { content: string; tags: string[]; images: string[] },
   ): Promise<ServiceData<Post>> {
     // 게시물작작성 트래잭션 (post, tag, postImage)
-    const post = await getManager().transaction(async transactionalEntityManager => {
+    const createdPost = await getManager().transaction(async transactionalEntityManager => {
       try {
         // 태그 저장
         const tags = await transactionalEntityManager.save(
@@ -48,14 +48,21 @@ class PostService {
           await this.createManyPostImage(writeForm.images),
         );
         // 게시물 저장
-        return await transactionalEntityManager.save(
+        const post = await transactionalEntityManager.save(
           Post.createOne({ content: writeForm.content, tags, images, userId: user.id }),
         );
+        if (!post) {
+          throw new InternalServerError({
+            name: 'CREATE_ONE_POST_ERROR',
+            message: '게시물 작성 쿼리 실패(리턴 값이 존재하지 않음)',
+          });
+        }
+        return post;
       } catch (error) {
         throw new InternalServerError({ ...error, name: 'CREATE_ONE_POST_ERROR' });
       }
     });
-    return successData(post);
+    return successData(createdPost);
   }
 
   // # 게시물 삭제
