@@ -1,11 +1,9 @@
 import Router from '@koa/router';
 
-import { list, write, update, remove, test } from './controller';
+import { list, write, update, remove } from './controller';
 import { checkLoggedIn } from '@/middlewares';
 
 const comments = new Router();
-
-comments.get('/test', test);
 
 comments.get('/', list);
 comments.post('/', checkLoggedIn, write);

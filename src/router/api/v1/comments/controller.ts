@@ -5,27 +5,37 @@ import { generateSchemaAndValue, validateSchema } from '@/utils/reqValidation';
 import { BadRequest } from '@/errors/errRequest';
 import CommentService from '@/services/CommentService';
 
+/**
+ * 댓글 전체 조회
+ * GET /api/v1/comments
+ */
 export const list: Middleware = async ctx => {
-  const {
-    'post-id': postId,
-    'p-id': pId,
-    'ref-comment': refCommentId,
-  }: { 'post-id': string; 'p-id'?: string; 'ref-comment': string } = ctx.request.query;
+  interface RequestQuery {
+    'post-id': string;
+    'p-id'?: string;
+    'ref-comment': string;
+  }
+  const requestQuery: RequestQuery = ctx.request.query;
+  const { 'post-id': postId, 'p-id': pId, 'ref-comment': refCommentId } = requestQuery;
 
   const schemaAndValue = generateSchemaAndValue({ postId, pId, refCommentId });
   if (!validateSchema(ctx, ...schemaAndValue)) {
-    throw new BadRequest({ message: ' shcema 오류', error: ctx.state.error });
+    return ctx.throw(new BadRequest(ctx.state.error));
   }
 
   const commentService = new CommentService();
   const listResult = await commentService.getAllComment(postId, pId, refCommentId);
   if (!listResult.success) {
-    throw new BadRequest('댓글 조회 실패');
+    return ctx.throw(new BadRequest(listResult.error));
   }
   ctx.status = StatusCodes.OK;
   ctx.body = listResult.data;
 };
 
+/**
+ * 댓글 작성
+ * POST /api/v1/comments
+ */
 export const write: Middleware = async ctx => {
   interface RequestBody {
     postId: string;
@@ -37,7 +47,7 @@ export const write: Middleware = async ctx => {
   const { postId, content, refCommentId, replyToId } = writeForm;
   const schemaAndValue = generateSchemaAndValue({ postId, content, refCommentId, replyToId });
   if (!validateSchema(ctx, ...schemaAndValue)) {
-    throw new BadRequest({ message: 'shcema 오류', error: ctx.state.error });
+    return ctx.throw(new BadRequest(ctx.state.error));
   }
   const commentService = new CommentService();
   const writeResult = await commentService.createOneComment(ctx.state.user, {
@@ -47,34 +57,35 @@ export const write: Middleware = async ctx => {
     replyToId,
   });
   if (!writeResult.success) {
-    throw new BadRequest(writeResult.error);
+    return ctx.throw(new BadRequest(writeResult.error));
   }
   ctx.status = StatusCodes.NO_CONTENT;
 };
 
+/**
+ * 댓글 수정
+ * PATCH /api/v1/comments/:id
+ * TODO: 댓글 수정 아직 안함. 나중에 프론트 좀 하고 하자.
+ */
 export const update: Middleware = async ctx => {
   ctx.status = StatusCodes.OK;
   ctx.body = 'OK';
 };
 
+/**
+ * 댓글 삭제
+ * DELETE /api/v1/comments/:id
+ */
 export const remove: Middleware = async ctx => {
   const { id: commentId }: { id: string } = ctx.params;
   const schemaAndValue = generateSchemaAndValue({ commentId });
   if (!validateSchema(ctx, ...schemaAndValue)) {
-    throw new BadRequest({ message: 'shcema 오류', error: ctx.state.error });
+    return ctx.throw(new BadRequest(ctx.state.error));
   }
   const commentService = new CommentService();
   const removeResult = await commentService.removeOneComment(ctx.state.user, commentId);
   if (!removeResult.success) {
-    throw new BadRequest(removeResult.error);
+    return ctx.throw(new BadRequest(removeResult.error));
   }
-  ctx.status = StatusCodes.OK;
-};
-
-export const test: Middleware = async ctx => {
-  const commentService = new CommentService();
-  const data = await commentService.test();
-
-  ctx.status = StatusCodes.OK;
-  ctx.body = data;
+  ctx.status = StatusCodes.NO_CONTENT;
 };

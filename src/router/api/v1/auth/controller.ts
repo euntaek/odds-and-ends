@@ -7,9 +7,12 @@ import AuthService from '@/services/AuthService';
 
 import { REFRESH_TOKEN_SECRET } from '@/constans';
 import { generateSchemaAndValue, validateSchema } from '@/utils/reqValidation';
-import { BadRequest, Conflict, Forbidden, NotFound, Unauthorized } from '@/errors/errRequest';
+import { BadRequest, Conflict, Unauthorized } from '@/errors/errRequest';
 
-// # 회원가입
+/**
+ * 회원가입
+ * POST /api/v1/auth/register
+ */
 export const register: Middleware = async ctx => {
   interface RequestBody {
     email: string;
@@ -23,31 +26,33 @@ export const register: Middleware = async ctx => {
 
   const schemaAndValue = generateSchemaAndValue(userForm);
   if (!validateSchema(ctx, ...schemaAndValue)) {
-    throw new BadRequest({ message: 'shcema 오류', error: ctx.state.error });
+    return ctx.throw(new BadRequest(ctx.state.error));
   }
 
   const authService = new AuthService();
   const registerResult = await authService.register(userForm);
 
-  if (!registerResult.success || !registerResult.data) {
-    throw new Conflict('회원가입 실패');
+  if (!registerResult.success) {
+    return ctx.throw(new Conflict(registerResult.error));
   }
 
-  const createdUser = registerResult.data;
+  const createdUser = registerResult.data as User;
 
   // 회원가입 인증 이메일 전송
-  /* 
   const sendMailResult = await authService.sendMail('register', createdUser);
 
   if (!sendMailResult.success) {
-    throw new BadRequest({ message: '회원가입 인증 메일 전송 실패', error: sendMailResult.error });
+    return ctx.throw(new BadRequest(sendMailResult.error));
   }
- */
+
   ctx.status = StatusCodes.OK;
   ctx.body = createdUser;
 };
 
-// # 로그인
+/**
+ * 로그인
+ * POST /api/v1/auth/login
+ */
 export const login: Middleware = async ctx => {
   interface RequestBody {
     email: string;
@@ -57,87 +62,76 @@ export const login: Middleware = async ctx => {
 
   const schemaAndValue = generateSchemaAndValue(loginForm);
   if (!validateSchema(ctx, ...schemaAndValue)) {
-    throw new BadRequest({ message: 'shcema 오류', error: ctx.state.error });
+    return ctx.throw(new BadRequest(ctx.state.error));
   }
   const authService = new AuthService();
-  const result = await authService.login(loginForm);
-  if (!result.success) {
-    throw new BadRequest(result.error);
+  const loginResult = await authService.login(loginForm);
+  if (!loginResult.success) {
+    return ctx.throw(new BadRequest(loginResult.error));
   }
   ctx.status = StatusCodes.OK;
-  ctx.body = result.data;
+  ctx.body = loginResult.data;
 };
 
-// # 리프레쉬
+/**
+ * 토큰 리프레쉬
+ * POST /api/v1/auth/refresh
+ */
 export const refresh: Middleware = async ctx => {
   const { refreshToken }: { refreshToken: string } = ctx.request.body;
 
   const schemaAndValue = generateSchemaAndValue({ refreshToken });
   if (!validateSchema(ctx, ...schemaAndValue)) {
-    throw new BadRequest({ message: 'shcema 오류', error: ctx.state.error });
+    return ctx.throw(new BadRequest(ctx.state.error));
   }
 
   const { id: userId }: { id: string } = jwt.verify(refreshToken, REFRESH_TOKEN_SECRET) as any;
   const authService = new AuthService();
-  const result = await authService.refresh(userId);
-  if (!result.success) throw new Unauthorized(result.error);
+  const reFreshResult = await authService.refresh(userId);
+  if (!reFreshResult.success) {
+    ctx.throw(new Unauthorized(reFreshResult.error));
+  }
 
   ctx.status = StatusCodes.OK;
-  ctx.body = result.data;
+  ctx.body = reFreshResult.data;
 };
 
-// # 이메일 인증
+/**
+ * 이메일 인증
+ * PATCH /api/v1/auth/email-confirmation
+ */
 export const emailConfirmation: Middleware = async ctx => {
   const { emailAuthToken }: { emailAuthToken: string } = ctx.request.body;
 
   const schemaAndValue = generateSchemaAndValue({ emailAuthToken });
   if (!validateSchema(ctx, ...schemaAndValue)) {
-    throw new BadRequest({ message: ' shcema 오류', error: ctx.state.error });
+    return ctx.throw(new BadRequest(ctx.state.error));
   }
 
   // 이메일 링크 인증
   const authService = new AuthService();
   const emailAuthResult = await authService.emailAuthentication(emailAuthToken, 'register');
   if (!emailAuthResult.success) {
-    if (emailAuthResult.error?.error === 404) throw new NotFound(emailAuthResult.error.message);
-    else throw new BadRequest(emailAuthResult.error);
+    return ctx.throw(new BadRequest(emailAuthResult.error));
   }
-  // 유저 인증
-  if (!emailAuthResult.data) throw new BadRequest('이메일 인증 정보가 존재하지 않습니다.');
+
+  // 유저 확인
+  if (!emailAuthResult.data) {
+    return ctx.throw(new BadRequest('EMAIL_AUTHENTICATION_NOT_FOUND'));
+  }
   const userConfirmResult = await authService.userConfirmation(emailAuthResult.data);
-  if (!userConfirmResult.success) throw new BadRequest(userConfirmResult.error);
+  if (!userConfirmResult.success) {
+    ctx.throw(new BadRequest(userConfirmResult.error));
+  }
   ctx.status = StatusCodes.OK;
-  ctx.body = 'User Confirmed!!';
+  ctx.body = { isConfirmed: true };
 };
 
-// # 사용자 체크
+/**
+ * 사용자 확인
+ * GET /api/v1/auth/check
+ */
 export const check: Middleware = async ctx => {
   ctx.status = StatusCodes.OK;
   ctx.body = ctx.state.user;
-};
-
-// # 로그인 상태 체크
-export const checkLoggedIn: Middleware = async (ctx, next) => {
-  const user: User = ctx.state.user;
-  if (!user) {
-    throw new Unauthorized({ message: '로그인이 필요합니다', error: '권한 없는 접근' });
-  }
-  if (!user.isConfirmed) {
-    throw new Forbidden({ message: '인증 되지 않은 사용자입니다.', error: '권한 없는 접근' });
-  }
-  return next();
-};
-
-// # 로그아웃 상태 체크
-export const checkLoggedOut: Middleware = async (ctx, next) => {
-  if (ctx.state.user) {
-    throw new Forbidden({ message: '잘못 된 접근입니다.', error: '권한 없는 접근' });
-  }
-  return next();
-};
-
-// # 테스트
-export const test: Middleware = async ctx => {
-  ctx.status = StatusCodes.OK;
-  // ctx.body = user;
 };

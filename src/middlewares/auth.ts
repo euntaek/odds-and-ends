@@ -15,7 +15,7 @@ export const hydrateUser: Koa.Middleware = async (ctx, next) => {
     console.log('\x1b[32m%s\x1b[0m', 'start--------------hydrate user--------------');
     const decoded = jwt.verify(accessToken, ACCESS_TOKEN_SECRET) as any;
     if (typeof decoded === 'string') return next();
-    ctx.state.user = (await User.findOneByKeyValue('id', decoded.id)) ?? undefined;
+    ctx.state.user = (await User.findOneByKeyValue('id', decoded.id, 'soft')) ?? undefined;
     console.log('\x1b[32m%s\x1b[0m', 'end----------------hydrate user--------------');
     return next();
   } catch (error) {
@@ -26,17 +26,33 @@ export const hydrateUser: Koa.Middleware = async (ctx, next) => {
 export const checkLoggedIn: Middleware = async (ctx, next) => {
   const user: User = ctx.state.user;
   if (!user) {
-    throw new Unauthorized({ message: '로그인이 필요합니다', error: '권한 없는 접근' });
+    return ctx.throw(
+      new Unauthorized({
+        name: 'CHECK_LOGGED_IN_FAILURE',
+        message: '로그인 후 이용 가능합니다.',
+      }),
+    );
   }
   if (!user.isConfirmed) {
-    throw new Forbidden({ message: '인증 되지 않은 사용자입니다.', error: '권한 없는 접근' });
+    return ctx.throw(
+      new Forbidden({
+        name: 'CHECK_LOGGED_IN_FAILURE',
+        message: '이메일 인증이 되지 않은 사용자입니다.',
+      }),
+    );
   }
   return next();
 };
 
+// # 로그아웃 상태 체크
 export const checkLoggedOut: Middleware = async (ctx, next) => {
   if (ctx.state.user) {
-    throw new Forbidden({ message: '잘못 된 접근입니다.', error: '권한 없는 접근' });
+    return ctx.throw(
+      new Unauthorized({
+        name: 'CHECK_LOGGED_OUT_FAILURE',
+        message: '로그인 상태로 이용 불가능합니다.',
+      }),
+    );
   }
   return next();
 };
