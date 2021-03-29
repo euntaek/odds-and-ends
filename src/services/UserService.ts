@@ -1,5 +1,3 @@
-import { FindOneOptions } from 'typeorm';
-
 import { User, Profile, Follow, Post } from '@/entity';
 import { InternalServerError } from '@/errors/errRequest';
 

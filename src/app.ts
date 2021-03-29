@@ -13,8 +13,11 @@ const appLoader = async (app: Koa) => {
     try {
       await next();
     } catch (err) {
-      ctx.status = err.statusCode || 500;
-      ctx.body = { message: err.message };
+      ctx.status = err.statusCode || err.status || 500;
+      ctx.body = {
+        name: err.name,
+        message: err.message,
+      };
       ctx.app.emit('error', err, ctx);
     }
   });
@@ -22,7 +25,6 @@ const appLoader = async (app: Koa) => {
   app.on('error', (err: RequestError, ctx: Context) => {
     console.log('\x1b[31m%s\x1b[0m', 'Error==========');
     console.log(err);
-    console.log('request: ', ctx.request, 'response: ', ctx.response);
     console.log('\x1b[31m%s\x1b[0m', '===============');
   });
 

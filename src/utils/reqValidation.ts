@@ -44,15 +44,20 @@ export const generateSchemaAndValue: GenerateSchemaAndValue = reqData => {
   return [Joi.object().keys(schema), reqData];
 };
 
-export const validateSchema = (ctx: RouterContext, schema: ObjectSchema, reqData: ReqData): boolean => {
+export const validateSchema = (
+  ctx: RouterContext,
+  schema: ObjectSchema,
+  reqData: ReqData,
+): boolean => {
   if (Object.keys(reqData).length === 0) {
-    ctx.state.error = 'requestData의 객체가 비여있습니다.';
+    ctx.state.error = 'requestData가 비여있습니다.';
     return false;
   }
 
   const validtaion = schema.validate(reqData);
   if (validtaion.error) {
-    ctx.state.error = validtaion.error;
+    ctx.state.error = { name: 'SCHEMA_VALIDATION_FAILED', message: validtaion.error.message };
+
     return false;
   }
   return true;
