@@ -5,7 +5,6 @@ import {
   read,
   userPosts,
   userComments,
-  checkDuplicate,
   editProfile,
   uploadThumbnail,
   follow,
@@ -18,7 +17,6 @@ import { checkLoggedIn, upload, checkUser, checkFollow } from '@/middlewares';
 const users = new Router();
 
 users.get('/', list); // TODO: 미완성. ctrl 확인
-users.get('/duplicate-check', checkDuplicate);
 users.get('/followers', checkLoggedIn, followers);
 users.get('/followings', checkLoggedIn, followings);
 users.patch('/profile', checkLoggedIn, editProfile);

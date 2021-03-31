@@ -4,6 +4,7 @@ import jwt from 'jsonwebtoken';
 
 import { User } from '@/entity';
 import AuthService from '@/services/AuthService';
+import UserService from '@/services/UserService';
 
 import { REFRESH_TOKEN_SECRET } from '@/constans';
 import { generateSchemaAndValue, validateSchema } from '@/utils/reqValidation';
@@ -134,4 +135,26 @@ export const emailConfirmation: Middleware = async ctx => {
 export const check: Middleware = async ctx => {
   ctx.status = StatusCodes.OK;
   ctx.body = ctx.state.user;
+};
+
+/**
+ * email, username 중복체크
+ * GET api/v1/users/duplicate-check?email=&username=
+ */
+export const checkDuplicate: Middleware = async ctx => {
+  const { key, value }: { key: 'email' | 'username'; value: string } = ctx.request.query;
+  const schemaAndValue = generateSchemaAndValue({ [key]: value });
+  if (!validateSchema(ctx, ...schemaAndValue)) {
+    return ctx.throw(new BadRequest(ctx.state.error));
+  }
+
+  const userService = new UserService();
+  const duplicateCheckResult = await userService.getOneUser(key, value);
+  if (!duplicateCheckResult.success) {
+    ctx.status = StatusCodes.OK;
+    ctx.body = { user: null, isNotDuplicated: true };
+    return;
+  }
+  ctx.status = StatusCodes.OK;
+  ctx.body = { key, value, isNotDuplicated: true };
 };
