@@ -3,10 +3,17 @@ import { css } from '@emotion/react';
 import { styleHelper, palette } from '@/lib/styles';
 import Spinner from '../Spinner';
 
+type RefReturn =
+  | string
+  | ((instance: HTMLInputElement | null) => void)
+  | React.RefObject<HTMLInputElement>
+  | null
+  | undefined;
+
 interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   className?: string;
-  id: string;
   label: string;
+  register: ({ required }: { required?: boolean }) => RefReturn;
   icon?: JSX.Element;
   isLoading?: boolean;
   successMessage?: string;
@@ -23,8 +30,8 @@ const msgFilter = (successMessage?: string, errorMessage?: string) => {
 
 function Input({
   className,
-  id,
   label,
+  register,
   icon,
   isLoading,
   successMessage,
@@ -40,8 +47,8 @@ function Input({
     <div className={className} css={style(props.disabled, success, error)}>
       <div className="input">
         {icon}
-        <label htmlFor={id}>{label}</label>
-        <input id={id} {...props} />
+        <label htmlFor={label}>{label}</label>
+        <input id={label} name={label} ref={register} {...props} />
         {isLoading && <Spinner color={palette.basic.black[1]} size="small" className="spinner" />}
       </div>
       <div className="input-message">
@@ -53,26 +60,22 @@ function Input({
 
 const style = (disabled: boolean = false, success?: boolean, error?: boolean) => css`
   .input {
-    position: relative;
     display: flex;
     align-items: center;
     flex-direction: row;
-    top: 0;
     width: 100%;
     height: 3rem;
     border: 0.125rem solid ${palette.basic.black[1]};
     border-radius: 0.25rem;
-    transition: top ease 200ms;
+    transition: transform ease 200ms;
     background-color: ${disabled ? palette.basic.black[3] : palette.basic.white[0]};
-    ${error && `border: 0.125rem solid ${palette.accent.red[1]};`}
-    ${success && `border: 0.125rem solid ${palette.accent.blue[1]};`}
+    ${(error || success) && `border: 0.125rem solid ${palette.accent[error ? 'red' : 'blue'][1]};`}
 
     &:focus-within {
-      position: relative;
-      top: -0.125rem;
+      transform: translateY(-0.125rem);
       border: 0.1875rem solid ${palette.basic.black[0]};
-      ${error && `border: 0.1875rem solid ${palette.accent.red[1]};`}
-      ${success && `border: 0.1875rem solid ${palette.accent.blue[1]};`}
+      ${(error || success) &&
+      `border: 0.1875rem solid ${palette.accent[error ? 'red' : 'blue'][1]};`}
     }
 
     label {
@@ -83,7 +86,6 @@ const style = (disabled: boolean = false, success?: boolean, error?: boolean) =>
       position: relative;
       flex-grow: 1;
       padding: 0;
-      top: 0;
       height: 100%;
       border: none;
       outline: none;

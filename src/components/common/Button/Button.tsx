@@ -25,8 +25,6 @@ function Button({
 
 const style = (isLoading: boolean = false) => css`
   display: flex;
-  position: relative;
-  top: 0;
   width: 17rem;
   height: 3rem;
   justify-content: center;
@@ -38,10 +36,10 @@ const style = (isLoading: boolean = false) => css`
   font-weight: 700;
   color: ${palette.basic.white[0]};
   cursor: pointer;
-  transition: top ease 200ms;
+  transition: transform ease 200ms;
 
   &:hover {
-    top: ${isLoading ? 0 : '-0.125rem'};
+    ${isLoading ? 0 : 'transform: translateY(-0.125rem);'};
   }
   &:disabled {
     background-color: ${palette.basic.black[1]};

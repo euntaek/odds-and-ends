@@ -1,14 +1,11 @@
 import next from 'next';
 import express from 'express';
-import redis from 'redis';
-import expressSession from 'express-session';
-import connectRedis from 'connect-redis';
 
 import api from './api';
 import { IS_PROD } from './lib/constants';
 import { session } from './middleware';
 
-const PORT = IS_PROD ? 3000 : 3030;
+const PORT = IS_PROD ? 3030 : 3030;
 
 (async () => {
   const app = express();

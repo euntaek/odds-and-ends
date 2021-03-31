@@ -17,4 +17,4 @@ function Icon({ name, className, style }: IconProps) {
   });
 }
 
-export default Icon;
+export default React.memo(Icon);
