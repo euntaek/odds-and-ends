@@ -1,9 +1,8 @@
 ---	
-name: :bug: Bug Report
+name: ":bug: Bug Report"
 about: 기능, UI, 오타, 잘못 된 링크
 labels: ":bug: 버그"
 assignees: ''
-
 ---
 
 ## 발생 일시
