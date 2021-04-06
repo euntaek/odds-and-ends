@@ -1,5 +1,5 @@
 ---
-name: '":bug: Bug Report"'
+name: :bug: Bug Report
 about: Describe this issue template's purpose here.
 title: ''
 labels: ":+1:  good, :bug: 버그"
