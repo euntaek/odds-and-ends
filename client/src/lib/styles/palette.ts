@@ -1,7 +1,7 @@
 const palette = {
   white: '#FFFFFF',
   black_00: '#000000',
-  balck_01: '23212C',
+  balck_01: '151618',
   black_op_80: 'rgba(35, 33, 44, 0.8)',
   gray_00: 'AFADBB',
   gray_01: '919095',
