@@ -13,4 +13,3 @@ teanpho는 160자 안으로 간단한 글과 사진을 공유하는 SNS입니다
 ![emotion](https://img.shields.io/badge/-Emotion-%23C43BAD)
 ![redis](https://img.shields.io/badge/-Redis-DC382D?&logo=redis&logoColor=white)
 ![aws](https://img.shields.io/badge/AWS-232F3E?&logo=Amazon%20AWS&logoColor=white)
->>>>>>> tc/main
