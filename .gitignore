@@ -3,3 +3,4 @@ coverage
 .parcel-cache
 dist
 .env
+.DS_Store
