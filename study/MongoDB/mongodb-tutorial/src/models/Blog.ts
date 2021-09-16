@@ -1,7 +1,8 @@
-import { Schema, model, Types, PopulatedDoc } from "mongoose";
+import { Schema, model, Types, PopulatedDoc, Document } from "mongoose";
 import { IUser } from ".";
 
 interface IBlog {
+  _id: Types.ObjectId;
   title: string;
   content: string;
   isLive: boolean;

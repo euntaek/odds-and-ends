@@ -12,3 +12,8 @@ export const create = asyncHandler(async (req, res) => {
   await user.save();
   return res.send({ user });
 });
+
+export const read = asyncHandler(async (req, res) => {
+  const user = await User.findById(req.params.id);
+  return res.send(user);
+});

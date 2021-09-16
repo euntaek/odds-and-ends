@@ -5,6 +5,7 @@ type ReqComment = { userId: string } & Omit<IComment, "user" | "blog">;
 
 export const create = asyncHandler(async (req, res) => {
   try {
+    console.log("comment");
     const { blogId } = req.params;
     const { userId, content } = req.body as ReqComment;
     const promises = [User.findById(userId), Blog.findById(blogId)] as const;

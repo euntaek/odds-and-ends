@@ -2,6 +2,7 @@ import { Schema, model, Types, PopulatedDoc } from "mongoose";
 import { IBlog, IUser } from ".";
 
 export interface IComment {
+  _id: Types.ObjectId;
   content: string;
   user: PopulatedDoc<IUser>;
   blog: PopulatedDoc<IBlog>;
