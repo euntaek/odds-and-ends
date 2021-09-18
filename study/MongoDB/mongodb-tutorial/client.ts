@@ -1,6 +1,8 @@
 import { IBlog, IUser, IComment } from "./src/models";
 import axios from "axios";
 
+//  비효율적인 방법: 13.542s (limit: 15)
+
 console.log("Client code running.");
 
 const API_ENDPOINT = "http://localhost:3000";
@@ -10,26 +12,10 @@ const client = axios.create({
 });
 
 const test = async () => {
+  console.time("loading time: ");
   let { data: blogs } = await client.get<IBlog[]>(`/blogs`);
-
-  blogs = await Promise.all(
-    blogs.map(async (blog) => {
-      const [{ data: user }, { data: comments }] = await Promise.all([
-        client.get<IUser>(`/users/${blog.user}`),
-        client.get<IComment[]>(`blogs/${blog._id}/comments`),
-      ]);
-      blog.user = user;
-      blog.comments = await Promise.all(
-        comments.map(async (comment) => {
-          const { data: user } = await client.get(`/users/${comment.user}`);
-          comment.user = user;
-          return comment;
-        })
-      );
-      return blog;
-    })
-  );
-  console.dir(blogs[45]);
+  console.log(blogs.length);
+  console.timeEnd("loading time: ");
 };
 
 test();

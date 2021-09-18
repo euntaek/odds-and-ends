@@ -10,8 +10,13 @@ export const create = asyncHandler(async (req, res) => {
     const { userId, content } = req.body as ReqComment;
     const promises = [User.findById(userId), Blog.findById(blogId)] as const;
     const [user, blog] = await Promise.all(promises);
+    if (!user || !blog) return res.status(400);
     const comment = new Comment({ user, blog, content });
-    await comment.save();
+    await Promise.all([
+      comment.save(),
+      Blog.updateOne({ _id: blogId }, { $push: { comments: comment } }),
+    ]);
+
     return res.send(comment);
   } catch (error) {
     return res.status(400).send({ err: "user or blog does not exist" });

@@ -8,7 +8,7 @@ export interface IComment {
   blog: PopulatedDoc<IBlog>;
 }
 
-const CommentSchema = new Schema<IComment>(
+export const CommentSchema = new Schema<IComment>(
   {
     content: { type: String, required: true },
     user: { type: Types.ObjectId, required: true, ref: "user" },

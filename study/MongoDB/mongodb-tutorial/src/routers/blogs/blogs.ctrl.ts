@@ -5,16 +5,21 @@ type ReqBlog = { userId: string } & Omit<IBlog, "user">;
 
 export const create = asyncHandler(async (req, res) => {
   const { title, content, isLive, userId } = req.body as ReqBlog;
-
+  console.log("create");
   const user = await User.findById(userId);
   if (!user) return res.status(400).json({ err: "user does not exist" });
-  const blog = new Blog({ ...req.body, user });
+  console.log(user);
+  const blog = new Blog({ title, content, isLive });
+  blog.user = user;
   await blog.save();
   return res.send(blog);
 });
 
 export const list = asyncHandler(async (req, res) => {
-  const blogs = await Blog.find();
+  const blogs = await Blog.find().populate([
+    { path: "user" },
+    { path: "comments", populate: { path: "user" } },
+  ]);
   return res.send(blogs);
 });
 
