@@ -16,10 +16,7 @@ export const create = asyncHandler(async (req, res) => {
 });
 
 export const list = asyncHandler(async (req, res) => {
-  const blogs = await Blog.find().populate([
-    { path: "user" },
-    { path: "comments", populate: { path: "user" } },
-  ]);
+  const blogs = await Blog.find().limit(200);
   return res.send(blogs);
 });
 

@@ -5,13 +5,15 @@ export interface IComment {
   _id: Types.ObjectId;
   content: string;
   user: PopulatedDoc<IUser>;
+  userFullName: string;
   blog: PopulatedDoc<IBlog>;
 }
 
-export const CommentSchema = new Schema<IComment>(
+export const CommentSchema = new Schema(
   {
     content: { type: String, required: true },
     user: { type: Types.ObjectId, required: true, ref: "user" },
+    userFullName: { type: String, required: true },
     blog: { type: Types.ObjectId, required: true, ref: "blog" },
   },
   { timestamps: true }
