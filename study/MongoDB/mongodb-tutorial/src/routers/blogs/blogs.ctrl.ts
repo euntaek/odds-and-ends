@@ -16,7 +16,8 @@ export const create = asyncHandler(async (req, res) => {
 });
 
 export const list = asyncHandler(async (req, res) => {
-  const blogs = await Blog.find().limit(200);
+  const blogs = await Blog.find();
+
   return res.send(blogs);
 });
 
