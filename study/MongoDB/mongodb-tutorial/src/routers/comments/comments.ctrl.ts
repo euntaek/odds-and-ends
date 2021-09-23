@@ -46,7 +46,7 @@ export const update = asyncHandler(async (req, res) => {
   const { commentId } = req.params;
   const { content } = req.body;
 
-  const [comment, _] = await Promise.all([
+  const [comment] = await Promise.all([
     Comment.findOneAndUpdate({ _id: commentId }, { content }, { new: true }),
     Blog.updateOne(
       { comments: { $elemMatch: { _id: commentId } } },
