@@ -8,14 +8,15 @@ interface IBlog {
   content: string;
   isLive: boolean;
   user: PopulatedDoc<IUser>;
+  commentsCount: number;
   comments: [PopulatedDoc<IComment>];
 }
 
-const BlogSchema = new Schema(
+const BlogSchema = new Schema<IBlog>(
   {
     title: { type: String, required: true },
     content: { type: String, required: true },
-    islive: { type: Boolean, required: true, default: false },
+    isLive: { type: Boolean, required: true, default: false },
     user: {
       _id: { type: Types.ObjectId, required: true, ref: "user" },
       username: { type: String, required: true },
@@ -30,6 +31,9 @@ const BlogSchema = new Schema(
   { timestamps: true }
 );
 
-const Blog = model<IBlog>("blog", BlogSchema);
+BlogSchema.index({ "user._id": 1, updatedAt: 1 });
+BlogSchema.index({ title: "text" });
+
+const Blog = model("blog", BlogSchema);
 
 export { IBlog, Blog };

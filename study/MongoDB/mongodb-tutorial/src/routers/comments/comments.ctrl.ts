@@ -21,11 +21,14 @@ export const create = asyncHandler(async (req, res) => {
       userFullName: `${user.name.first} ${user.name.last}`,
     });
 
+    // await Promise.all([
+    //   comment.save(),
+    //   Blog.updateOne({ _id: blogId }, { $push: { comments: comment } }),
+    // ]);
     await Promise.all([
       comment.save(),
-      Blog.updateOne({ _id: blogId }, { $push: { comments: comment } }),
+      Blog.updateOne({ _id: blogId }, { $inc: { commentsCount: 1 } }),
     ]);
-
     return res.send(comment);
   } catch (error) {
     return res.status(400).send({ err: "user or blog does not exist" });
@@ -34,11 +37,16 @@ export const create = asyncHandler(async (req, res) => {
 
 export const list = asyncHandler(async (req, res) => {
   try {
+    const { page = "0" } = req.query as { page: string };
+
     const { blogId } = req.params;
-    const comments = await Comment.find({ blog: blogId });
+    const comments = await Comment.find({ blog: blogId })
+      .sort({ createdAt: -1 })
+      .skip(parseInt(page, 10) * 20)
+      .limit(20);
     return res.send(comments);
   } catch (error) {
-    return res.status(400).send({ err: "user or blog does not exist" });
+    return res.status(400).send({ err: "comments or blog does not exist" });
   }
 });
 
