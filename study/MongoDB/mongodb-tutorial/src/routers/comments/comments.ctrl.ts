@@ -1,37 +1,41 @@
+import { startSession } from "mongoose";
 import asyncHandler from "express-async-handler";
 import { Comment, IComment, Blog, User } from "@src/models";
-import { Types } from "mongoose";
 
 type ReqComment = { userId: string } & Omit<IComment, "user" | "blog">;
 
 export const create = asyncHandler(async (req, res) => {
+  const session = await startSession();
+  let result;
   try {
-    console.log("comment");
-    const { blogId } = req.params;
-    const { userId, content } = req.body as ReqComment;
-    const promises = [User.findById(userId), Blog.findById(blogId)] as const;
-    const [user, blog] = await Promise.all(promises);
+    const comment = await session.withTransaction(async () => {
+      const { blogId } = req.params as { blogId: string };
+      const { userId, content } = req.body as ReqComment;
+      if (blogId == "1") return res.status(400).send("user | blog ");
+      const promises = [
+        User.findById(userId, {}, { session }),
+        Blog.findById(blogId, {}, { session }),
+      ] as const;
+      const [user, blog] = await Promise.all(promises);
 
-    if (!user || !blog) return res.status(400);
+      if (!user || !blog) return res.status(400).send("user | blog ");
 
-    const comment = new Comment({
-      user,
-      blog,
-      content,
-      userFullName: `${user.name.first} ${user.name.last}`,
+      const comment = new Comment({
+        user,
+        blog: blogId,
+        content,
+        userFullName: `${user.name.first} ${user.name.last}`,
+      });
+
+      blog.commentsCount++;
+      if (blog.commentsCount > 3) blog.comments.shift();
+
+      await Promise.all([comment.save({ session }), blog.save({ session })]);
+      result = comment;
     });
-
-    // await Promise.all([
-    //   comment.save(),
-    //   Blog.updateOne({ _id: blogId }, { $push: { comments: comment } }),
-    // ]);
-    await Promise.all([
-      comment.save(),
-      Blog.updateOne({ _id: blogId }, { $inc: { commentsCount: 1 } }),
-    ]);
-    return res.send(comment);
-  } catch (error) {
-    return res.status(400).send({ err: "user or blog does not exist" });
+    return res.send(result);
+  } finally {
+    await session.endSession();
   }
 });
 

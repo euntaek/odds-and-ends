@@ -34,6 +34,6 @@ const BlogSchema = new Schema<IBlog>(
 BlogSchema.index({ "user._id": 1, updatedAt: 1 });
 BlogSchema.index({ title: "text" });
 
-const Blog = model("blog", BlogSchema);
+const Blog = model<IBlog>("blog", BlogSchema);
 
 export { IBlog, Blog };
